@@ -46,8 +46,6 @@ eventCounter <- function(x,
 }
 
 
-
-
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
