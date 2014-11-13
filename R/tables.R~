@@ -1,0 +1,46 @@
+crisis <- fread(input = paste0(PATH.DATA,"/FINAL/crisisDB.csv"))
+crisis.labels <- fread(input = paste0(PATH.DATA,"/FINAL/crisisDB.labels.csv"))
+
+crisis[, DATE := as.Date(DATE)]
+crisis[, YEAR := year(DATE)]
+
+crisis.types <-
+    c("CN.STOCKMARKETCRASH", "CN.CURRENCYCRISIS", "CN.INFLATIONCRISIS", 
+      "CN.DOMESTICSOVDEBT", "CN.FOREIGNSOVDEBT", "CN.BANKINGCRISIS")
+
+
+crisis_summary <- list()
+for (x in crisis.types){
+    crisis_summary[[x]] <-
+        crisis[get(x) != 0 & YEAR > 1995
+             , list(period = {
+                 miny = min(YEAR)
+                 maxy = max(YEAR)
+                 if (miny == maxy)
+                     paste0(miny)
+                 else
+                     paste0(min(YEAR),"-",max(YEAR))
+             })
+             , by = c("COUNTRY", x)][
+                 , list(periods = paste0(period, collapse = "; "))
+                 , by = COUNTRY][order(COUNTRY)]
+    setnames(crisis_summary[[x]], "periods", x)
+}
+
+crisis_summary.table <-
+    Reduce(function(...) merge(..., by = "COUNTRY", all = TRUE), crisis_summary)
+
+crisis_summary.output <- capture.output({
+    print(xtable(crisis_summary.table,
+                 digits = 0
+                 ),
+          only.contents  = T,
+          hline = NULL,
+          include.rownames = FALSE,
+          include.colnames = FALSE,
+          sanitize.text.function = .sanitize)
+})
+
+innerTEX(crisis_summary.output,
+         file = paste0(PATH.TABLE,"/crisis.database.tex"))
+

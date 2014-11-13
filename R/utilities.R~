@@ -1,0 +1,24 @@
+.innerTEX <- function(output,file){
+    sink(file)
+    cat(paste(output,collapse = "\n"))
+    sink()
+    cat(paste0("The table was written to the file '", file,
+               "'.\n"))
+    return(NULL)
+}
+
+.simpleCap <- function(x) {
+    gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", x, perl=TRUE)
+    ## s <- strsplit(x, " ")[[1]]
+    ## paste(toupper(substring(s, 1,1)), substring(s, 2),
+    ##       sep="", collapse=" ")
+}
+
+.sanitize <- function(s) {
+    s <- gsub("\\&","\\\\&",s)
+    s
+}
+
+.indent <- function(s) {
+    paste0("\\hspace{0.3cm}",s)
+}
