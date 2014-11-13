@@ -28,8 +28,8 @@ eventCounter <- function(x,
             else if (x[y] == success) out = c(out,0)
         } else {
             if (is.na(x[y])){
-                if (is.na(x[y-1])) out = c(out,NA)
-                else if (x[y-1] == success) {out = c(out,NA)}
+                if (is.na(x[y-1])) out = c(out,0)
+                else if (x[y-1] == success) {out = c(out,0)}
                 else if (x[y-1] == failure) {out = c(out,i);}
             }
             else if (x[y] == success){

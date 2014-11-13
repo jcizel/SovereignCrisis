@@ -19,9 +19,23 @@ crisis.2 <-
 undebug(tabulateCrises)
 tabulateCrises(
     crisisDT = crisis,
-    crisisTypes = c('Foreign Sov Debt',
-                    'Domestic Sov Debt'),
-    min.time = 2000,
+    crisisTypes = c(
+        'Stock Market Crash',
+        'Foreign Sov Debt',
+        'Domestic Sov Debt',
+        'Banking Crisis'
+                    ),
+    min.time = 1990,
+    idCol = "ISO3",
+    timeCol = "Year"
+)
+
+undebug(eventCounter)
+tabulateCrises(
+    crisisDT = crisis,
+    crisisTypes = c('Stock Market Crash'
+                    ),
+    min.time = 1990,
     idCol = "ISO3",
     timeCol = "Year"
 )
