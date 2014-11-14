@@ -246,3 +246,7 @@ o[, label := .lookupVariable(query = variable,
               return.cols = c('Table','Concept', 'scale_desc')
                              )]
 
+
+write.csv(x = o,
+          file = "~/Downloads/test.csv")
+
