@@ -13,7 +13,8 @@ Imports:
     ggplot2,
     xtable,
     xlsx,
-    WorldBankAPI	
+    WorldBankAPI,
+    stringr
 Suggests:
     knitr,
     testthat

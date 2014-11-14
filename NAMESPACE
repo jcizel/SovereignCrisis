@@ -1,2 +1,3 @@
 exportPattern("^[^\\.]")
 import(data.table)
+import(xlsx)
