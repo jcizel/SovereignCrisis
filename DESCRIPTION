@@ -9,7 +9,11 @@ Depends:
     data.table
 Imports:
     data.table,
-    xtable
+    zoo,
+    ggplot2,
+    xtable,
+    xlsx,
+    WorldBankAPI	
 Suggests:
     knitr,
     testthat
