@@ -4,12 +4,11 @@ options(width = 90)
 
 load_all()
 
-crisis <- fread(input = './inst/extdata/SOVEREIGN/RR-crisis.dataset.csv',
-                header = TRUE)
+crisis <- loadCrisisDB()
 
 ## undebug(SovereignCrisis::createCrisisVariables)
 crisis.2 <- 
-    SovereignCrisis::createCrisisVariables(
+    createCrisisVariables(
         crisisDT = crisis,
         crisisCol = 'Foreign Sov Debt',
         idCol = 'ISO3',
@@ -17,18 +16,23 @@ crisis.2 <-
     )
 
 undebug(tabulateCrises)
-tabulateCrises(
-    crisisDT = crisis,
-    crisisTypes = c(
-        'Stock Market Crash',
-        'Foreign Sov Debt',
-        'Domestic Sov Debt',
-        'Banking Crisis'
-                    ),
-    min.time = 1990,
-    idCol = "ISO3",
-    timeCol = "Year"
-)
+
+out <- 
+    tabulateCrises(
+        crisisDT = crisis,
+        crisisTypes = c(
+            'Stock Market Crash',
+            'Currency Crisis',
+            'Inflation Crisis',
+            'Foreign Sov Debt',
+            'Domestic Sov Debt',
+            'Banking Crisis'
+        ),
+        min.time = 1960,
+        idCol = "ISO3",
+        timeCol = "Year",
+        outfile = './inst/RESULTS/crisisdb.tex'
+    )
 
 undebug(eventCounter)
 tabulateCrises(

@@ -14,7 +14,7 @@ tabulateCrises <- function(crisisDT,
                            timeCol = 'YEAR',
                            min.time = 1995,
                            idCol = 'iso3',
-                           file = '~/Downloads/crises.tex'){
+                           outfile){
 
     crisis_summary <- list()
     for (x in crisisTypes){
@@ -22,7 +22,7 @@ tabulateCrises <- function(crisisDT,
             crisis <- copy(crisisDT)
 
             crisis.2 <- 
-                SovereignCrisis::createCrisisVariables(
+                createCrisisVariables(
                     crisisDT = crisis,
                     crisisCol = x,
                     idCol = idCol,
@@ -55,21 +55,12 @@ tabulateCrises <- function(crisisDT,
     crisis_summary.table <-
         Reduce(function(...) merge(..., by = idCol, all = TRUE), crisis_summary)
 
-    crisis_summary.output <- capture.output({
-        print(xtable:::xtable(crisis_summary.table,
-                              digits = 0
-                              ),
-              only.contents  = T,
-              hline = NULL,
-              include.rownames = FALSE,
-              include.colnames = FALSE,
-              sanitize.text.function = SovereignCrisis:::.sanitize)
-    })
 
-    SovereignCrisis:::.innerTEX(crisis_summary.output,
-                                file = file)
+    out <- LaTeXTableGems:::dataTableToInnerLatex(crisis_summary.table,
+                                                  outfile = outfile)
+    
 
-    return(crisis_summary.output)
+    return(out)
 }
 
 

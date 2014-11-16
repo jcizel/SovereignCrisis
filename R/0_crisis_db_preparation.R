@@ -94,8 +94,15 @@ createCrisisVariables <- function(crisisDT,
         x
     }]
 
-    print(data.frame(crisis[, c(idCol, timeCol, crisisCol, "PCN", "CN", "COUNTDOWN","CRISIS"),with = FALSE]),
-          nrows = 100)
+    ## print(data.frame(crisis[, c(idCol, timeCol, crisisCol, "PCN", "CN", "COUNTDOWN","CRISIS"),with = FALSE]),
+    ##       nrows = 100)
 
     return(crisis)
+}
+
+
+loadCrisisDB <- function(){
+    out <- fread(input = './inst/extdata/SOVEREIGN/RR-crisis.dataset.csv',
+                 header = TRUE)
+    return(out)
 }
