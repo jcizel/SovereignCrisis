@@ -74,6 +74,7 @@ tabulateCrises <- function(crisisDT,
 
 
 tabulateDataAvailability <- function(dt,
+                                     outfile,
                                      selCols = names(dt),
                                      lookup.table = NULL,
                                      lookup.table.id = 'name',
@@ -90,22 +91,31 @@ tabulateDataAvailability <- function(dt,
                   varNameCol = lookup.table.id,
                   return.cols = lookup.table.label
               )]
-        o <- o[!is.na(label)][, list(variable,label,Availability)]
+        o <- o[!is.na(label)][, list(variable,label,Availability)][, selCols, with = FALSE]
     }
     
-    LaTeXTableGems:::dataTableToInnerLatex(dt = o)
+    LaTeXTableGems:::dataTableToInnerLatex(dt = o[, selCols, with = FALSE],
+                                           outfile = outfile)
 
+    return(o)
 }
 
 
-lookup.table <- rbindlist(
-    list(
-        data.table(name = 'ratingnum',
-                   label = 'S&P LT Foreign Issuer Sovereign Rating'),
-        data.table(name = 'cds',
-                   label = '5-Year Sovereign CDS Spread (Source: Bloomberg)'),
-        data.table(name = 'spread',
-                   label = 'Treasury Bond Spread above U.S. Treasury Yield (in b.p)')
-    )
-)
+## lookup.table <- rbindlist(
+##     list(
+##         data.table(name = 'ratingnum',
+##                    label = 'S&P LT Foreign Issuer Sovereign Rating'),
+##         data.table(name = 'cds',
+##                    label = '5-Year Sovereign CDS Spread (Source: Bloomberg)'),
+##         data.table(name = 'spread',
+##                    label = 'Treasury Bond Spread above U.S. Treasury Yield (in b.p)')
+##     )
+## )
 
+
+## bench <- getSovBenchmarks()
+## r <- 
+##     tabulateDataAvailability(dt = bench,
+##                              outfile = "./inst/RESULTS/availability.tex",
+##                              lookup.table = lookup.table,
+##                              selCols = c("label", "Availability"))
