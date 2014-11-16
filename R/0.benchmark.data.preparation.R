@@ -86,6 +86,13 @@
 
 ## .lookupISOCode(query = c("SVN","AUT"), queryType = 'iso3')
 
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Create a dataset of Sovereign CDS Spreads (source: Bloomberg) 
+##' @return data.table with cds
+##' @author Janko Cizel
 getBloombergSovCDS <- function(){
 
     cds <- fread(input = './inst/extdata/SOVEREIGN/Bloomberg CDS/Bloomberg Sovereign CDS.csv')
@@ -111,6 +118,13 @@ getBloombergSovCDS <- function(){
 
 ## cds <- getBloombergSovCDS()
 
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Create a dataset of S&P sovereign credit ratings 
+##' @return data.table with ratings
+##' @author Janko Cizel
 getSPRatings <- function(){
     ratings <- fread(input =  "./inst/extdata/SPRatingXpress/Sovereign Ratings Processed.csv")
     
@@ -125,7 +139,13 @@ getSPRatings <- function(){
 }
 
 ## ratings <- getSPRatings()
-
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Create a IMF-IFS dataset 
+##' @return data.table with resulting dataset (attribute 'colnames') contains
+##' labeling information of variables.
+##' @author Janko Cizel
 getIMFIFS <- function(){
     imfifs <- fread(input = "./inst/extdata/IMF/IFS/IMF-IFS_annual.csv",
                     header = TRUE
@@ -155,6 +175,12 @@ getIMFIFS <- function(){
 
 ## imf <- getIMFIFS()
 
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Get a dataset of sovereign bond spreads (source: World Bank and IMF) 
+##' @return data.table of results
+##' @author Janko Cizel
 getSovBondSpreads <- function(){
     spread <- read.xlsx2(file = "./inst/extdata/World Bank/GEM/Sovereign Bond Interest Rate Spreads, basis points over US Treasuries.xlsx",
                        sheetName = "monthly",
@@ -228,10 +254,18 @@ getSovBondSpreads <- function(){
 }
 
 ## spread <- getSovBondSpreads()
-## spread[iso3=='BRA', qplot(date,spread,geom = 'line')]
+## spread[iso3=='VEN', qplot(date,spread,geom = 'line')]
 
 
-
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Summarize data availability for each cross-sectional unit over time
+##' @param dt data.table containing the data
+##' @param idCol column with cross-sectional unit identifiers
+##' @param timeCol column with time-unit identifiers
+##' @return data.table with a summary of data availability
+##' @author Janko Cizel
 summarizeDataAvailability <- function(dt,
                                       idCol = 'iso3',
                                       timeCol = 'date'){
