@@ -109,7 +109,7 @@ getBloombergSovCDS <- function(){
     return(out)
 }
 
-## getBloombergSovCDS()
+## cds <- getBloombergSovCDS()
 
 getSPRatings <- function(){
     ratings <- fread(input =  "./inst/extdata/SPRatingXpress/Sovereign Ratings Processed.csv")
@@ -124,7 +124,7 @@ getSPRatings <- function(){
     return(out)
 }
 
-## getSPRatings()
+## ratings <- getSPRatings()
 
 getIMFIFS <- function(){
     imfifs <- fread(input = "./inst/extdata/IMF/IFS/IMF-IFS_annual.csv",
@@ -181,16 +181,54 @@ getSovBondSpreads <- function(){
                  queryType = 'name')]
 
     o[, spread := as.numeric(BOND.SPREAD)]
+    o[, source := "wb"]
+    
+    ## FOR SOME COUNTRIES, ESPECIALLY DEVELOPED ONES, WORLD BANK DB DOESN NOT
+    ## CONTAIN GOVERNMENT BOND YIELDS. FOR THESE COUNTRIES TAKE YIELDS FROM
+    ## IMF-IFS INSTEAD
+    
+    imf <- getIMFIFS()[, list(iso3, date, yield = L61)][!is.na(yield)]
+    ## benchy <- getIMFIFS()[, list(iso3, date, yield = L61A)][iso3 == 'USA', list( date, bench = yield)]
+    benchy <- imf[iso3 == 'USA', list( date, bench = yield)]
 
+    setkey(imf, date)
+    setkey(benchy, date)
+    o2 <- benchy[imf, roll = TRUE][, list(iso3, date, spread = (yield - bench)*100)][!is.na(spread)]
+    o2[, source := 'imf']
+
+    
     out <-
-        o[, list(iso3,
-                 date,
-                 spread)]
-    return(out)
+        rbindlist(
+            list(
+                o[, list(iso3,
+                         date,
+                         spread,
+                         source)],
+                o2[, list(iso3,
+                          date,
+                          spread,
+                          source)]
+            )
+        )
+
+    ## IDENTIFY DUPLICATES
+    out[, dup := {
+        s <- unique(source)
+        length(source) > 1
+    }, by = list(iso3, year(date))]
+    
+    out <- out[ dup == FALSE
+               | (dup == TRUE & source == 'wb')]
+
+    setkey(out, date)
+    setkey(benchy, date)
+    out <- benchy[out, roll = TRUE]
+
+    return(out[order(iso3, date)][!is.na(iso3)][, list(iso3, date, bench, spread, source)])
 }
 
 ## spread <- getSovBondSpreads()
-## spread[iso3=='ARG', qplot(date,spread,geom = 'line')]
+## spread[iso3=='BRA', qplot(date,spread,geom = 'line')]
 
 
 
@@ -228,21 +266,45 @@ summarizeDataAvailability <- function(dt,
     return(out)
 }
 
-o <- 
-    summarizeDataAvailability(dt = imf,
-                              idCol = 'iso3',
-                              timeCol = 'date')
+## o <- 
+##     summarizeDataAvailability(dt = imf,
+##                               idCol = 'iso3',
+##                               timeCol = 'date')
 
-x <- 
-    .lookupVariable(query = o$variable,
-                    lookup.table = attributes(imf)$colnames,
-                    varNameCol = 'Variable',
-                    return.cols = c('Table','Concept', 'scale_desc')
-                    )
+## x <- 
+##     .lookupVariable(query = o$variable,
+##                     lookup.table = attributes(imf)$colnames,
+##                     varNameCol = 'Variable',
+##                     return.cols = c('Table','Concept', 'scale_desc')
+##                     )
 
-o[, label := .lookupVariable(query = variable,
-              lookup.table = attributes(imf)$colnames,
-              varNameCol = 'Variable',
-              return.cols = c('Table','Concept', 'scale_desc')
-                             )]
+## o[, label := .lookupVariable(query = variable,
+##               lookup.table = attributes(imf)$colnames,
+##               varNameCol = 'Variable',
+##               return.cols = c('Table','Concept', 'scale_desc')
+##                              )]
 
+## setcolorder(o, c("variable", "label", "Availability"))
+
+
+## write.csv(x = o[order(nchar(Availability))],
+##           file = "~/Downloads/test.csv")
+
+
+
+## o <- 
+##     summarizeDataAvailability(dt = ratings,
+##                               idCol = 'iso3',
+##                               timeCol = 'date')
+
+## o <- 
+##     summarizeDataAvailability(dt = cds,
+##                               idCol = 'iso3',
+##                               timeCol = 'date')
+
+## o <- 
+##     summarizeDataAvailability(dt = spread,
+##                               idCol = 'iso3',
+##                               timeCol = 'date')
+
+## spread[iso3 == 'KOR', qplot(date, spread, geom = 'line')]
