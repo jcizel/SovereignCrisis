@@ -87,6 +87,17 @@
 ## .lookupISOCode(query = c("SVN","AUT"), queryType = 'iso3')
 
 
+.fCrDates  <- function(begin = '2000-01-01', end = '2013-05-01',
+                      frequency = apply.quarterly){
+    dates <- seq(from = as.Date(begin), to=as.Date(end),by=1)
+    dates <- xts(dates,order.by=dates)
+    dates <- data.frame(date=frequency(dates, tail, n=1))
+    dates <- data.table(dates)[,list(tix = seq_along(date), date = as.Date(date))]
+    return(dates)
+}
+
+
+
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
@@ -212,8 +223,9 @@ getSovBondSpreads <- function(){
     ## FOR SOME COUNTRIES, ESPECIALLY DEVELOPED ONES, WORLD BANK DB DOESN NOT
     ## CONTAIN GOVERNMENT BOND YIELDS. FOR THESE COUNTRIES TAKE YIELDS FROM
     ## IMF-IFS INSTEAD
-    
-    imf <- getIMFIFS()[, list(iso3, date, yield = L61)][!is.na(yield)]
+
+    ## of potential interest: L61, L60C, 
+    imf <- getIMFIFS()[, list(iso3, date, yield = L60C)][!is.na(yield)]
     ## benchy <- getIMFIFS()[, list(iso3, date, yield = L61A)][iso3 == 'USA', list( date, bench = yield)]
     benchy <- imf[iso3 == 'USA', list( date, bench = yield)]
 
@@ -254,8 +266,48 @@ getSovBondSpreads <- function(){
 }
 
 ## spread <- getSovBondSpreads()
-## spread[iso3=='VEN', qplot(date,spread,geom = 'line')]
+## spread[iso3=='DEU' & year(date) > 2000, qplot(date,spread,geom = 'line')]
 
+
+
+getSovBenchmarks <- function(){
+    data <- list()
+    data[['cds']] <- getBloombergSovCDS()
+    data[['sprating']] <- getSPRatings()
+    data[['spreads']] <- getSovBondSpreads()
+
+    ## Merge based on iso3 and date (make sure both are present in all datasets)
+
+    ids = unique(as.character(unlist(lapply(data, function(x) unique(x$iso3)))))
+    ids = ids[!is.na(ids) & ids!=""]
+    dates = .fCrDates(begin="1960-01-01",end="2014-07-31", frequency=apply.yearly)[[2L]]
+
+    out <- CJ(iso3 = ids,date = dates)
+
+    for (x in names(data)){
+        cat(x,"\n")
+        b <- copy(data[[x]])
+        b[, date := as.Date(date)]
+
+        uniquecols <- setdiff(names(b),names(out))
+        b <- b[,c("iso3","date",uniquecols), with = FALSE]
+        
+        setkey(out, iso3, date)
+        setkey(b, iso3, date)
+        out <- b[out, roll = 365]
+
+        newcols <- setdiff(intersect(names(out), names(b)),c("iso3","date"))
+        oldcols <- setdiff(names(out),newcols)
+
+        ## cat(newcols,"\n",oldcols,"\n")
+        setcolorder(out,c(oldcols,newcols))
+    }
+
+    return(out)
+}
+
+## bench <- getSovBenchmarks()
+## summarizeDataAvailability(bench)
 
 ##' .. content for \description{} (no empty lines) ..
 ##'

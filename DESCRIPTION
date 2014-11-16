@@ -10,10 +10,12 @@ Depends:
 Imports:
     data.table,
     zoo,
+    xts,
     ggplot2,
     xtable,
     xlsx,
     WorldBankAPI,
+    LaTeXTableGems,
     stringr
 Suggests:
     knitr,

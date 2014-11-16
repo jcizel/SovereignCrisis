@@ -71,3 +71,41 @@ tabulateCrises <- function(crisisDT,
 
     return(crisis_summary.output)
 }
+
+
+tabulateDataAvailability <- function(dt,
+                                     selCols = names(dt),
+                                     lookup.table = NULL,
+                                     lookup.table.id = 'name',
+                                     lookup.table.label = 'label'){
+
+    require(LaTeXTableGems)
+    o <- summarizeDataAvailability(dt)
+
+    if (!is.null(lookup.table)){
+        o[, label :=
+              .lookupVariable(
+                  variable,
+                  lookup.table = lookup.table,
+                  varNameCol = lookup.table.id,
+                  return.cols = lookup.table.label
+              )]
+        o <- o[!is.na(label)][, list(variable,label,Availability)]
+    }
+    
+    LaTeXTableGems:::dataTableToInnerLatex(dt = o)
+
+}
+
+
+lookup.table <- rbindlist(
+    list(
+        data.table(name = 'ratingnum',
+                   label = 'S&P LT Foreign Issuer Sovereign Rating'),
+        data.table(name = 'cds',
+                   label = '5-Year Sovereign CDS Spread (Source: Bloomberg)'),
+        data.table(name = 'spread',
+                   label = 'Treasury Bond Spread above U.S. Treasury Yield (in b.p)')
+    )
+)
+
