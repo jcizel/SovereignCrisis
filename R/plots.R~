@@ -1,0 +1,124 @@
+
+require(gridExtra)
+
+macro[iso3 %in% c("BEL","IRL","ISL","ARG","BRA","NLD","FRA","KOR","GRC","PRT","ITA","ESP","NOR","CHE","JPN","DEU","CHL","RUS","VEN","AUS","AUT","USA"),{
+    dt <- .SD[year>=1990]
+    plots <- list()
+    
+    plots[["p1"]] <-
+        ggplot(dt) +
+        geom_line(aes(x = date,
+                      y = cds )) +
+        geom_rect(aes(xmin = mind.ForeignSovDebt,
+                      xmax = maxd.ForeignSovDebt,
+                      ymin=-Inf, ymax=Inf,
+                      fill = t),
+                  fill="red",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +
+        geom_rect(aes(xmin = mind.BankingCrisis,
+                      xmax = maxd.BankingCrisis,
+                      ymin=-Inf, ymax=Inf,
+                      fill = t),
+                  fill="gray20",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +                      
+        theme_bw() +
+        labs(x = "",
+             y = "5-Year Sovereign \n CDS Spread \n (in b.p.)") +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1),
+              axis.text.y = element_text(size = 10))
+
+    plots[["p2"]] <-
+        ggplot(dt) +
+        geom_line(aes(x = date,
+                      y = rating )) +
+        geom_rect(aes(xmin = mind.ForeignSovDebt,
+                      xmax = maxd.ForeignSovDebt,
+                      ymin=-Inf, ymax=Inf),
+                  fill="red",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +
+        geom_rect(aes(xmin = mind.BankingCrisis,
+                      xmax = maxd.BankingCrisis,
+                      ymin=-Inf, ymax=Inf,
+                      fill = t),
+                  fill="gray20",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +                                            
+        theme_bw() +
+        labs(x = "",
+             y = "S&P Sovereign \n Credit Rating\n") +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1),
+              axis.text.y = element_text(size = 10))
+
+    plots[["p3"]] <-
+        ggplot(dt) +
+        geom_line(aes(x = date,
+                      y = GOVT.BOND.SPREAD )) +
+        geom_rect(aes(xmin = mind.ForeignSovDebt,
+                      xmax = maxd.ForeignSovDebt,
+                      ymin=-Inf, ymax=Inf),
+                  fill="red",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +
+        geom_rect(aes(xmin = mind.BankingCrisis,
+                      xmax = maxd.BankingCrisis,
+                      ymin=-Inf, ymax=Inf,
+                      fill = t),
+                  fill="gray20",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +                                            
+        theme_bw() +
+        labs(x = "",
+             y = "Government Bond Spread \n Over U.S. Treasury \n (in b.p.)") +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1),
+              axis.text.y = element_text(size = 10))
+
+    plots[["p4"]] <-
+        ggplot(dt) +
+        geom_line(aes(x = date,
+                      y = L62 )) +
+        geom_rect(aes(xmin = mind.ForeignSovDebt,
+                      xmax = maxd.ForeignSovDebt,
+                      ymin=-Inf, ymax=Inf),
+                  fill="red",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +
+        geom_rect(aes(xmin = mind.BankingCrisis,
+                      xmax = maxd.BankingCrisis,
+                      ymin=-Inf, ymax=Inf,
+                      fill = t),
+                  fill="gray20",
+                  alpha = 0.01,
+                  inherit.aes = FALSE) +                                            
+        theme_bw() +
+        labs(x = "",
+             y = "Share Price Index\n\n") +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1),
+              axis.text.y = element_text(size = 10))
+
+    g <- 
+        do.call("arrangeGrob",
+                c(plots,
+                  list(
+                      as.table = FALSE,
+                      ncol = 1,
+                      ## widths = 20,
+                      ## heights = 5,
+                      default.units = "cm"
+                      ## main =
+                      ## textGrob(.BY,
+                      ##          gp=gpar(cex=1),
+                      ##          just="top")
+                      )
+                  ))
+
+    ggsave(file = paste0(PATH.TABLE, "TIME.SERIES.",.BY,".pdf"),
+           width = 310,
+           height = 210,
+           units = "mm",
+           g)       
+}, by = iso3]
+
+

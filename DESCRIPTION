@@ -12,6 +12,7 @@ Imports:
     zoo,
     xts,
     ggplot2,
+    gridExtra,
     xtable,
     xlsx,
     WorldBankAPI,

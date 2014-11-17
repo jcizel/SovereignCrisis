@@ -104,5 +104,11 @@ createCrisisVariables <- function(crisisDT,
 loadCrisisDB <- function(){
     out <- fread(input = './inst/extdata/SOVEREIGN/RR-crisis.dataset.csv',
                  header = TRUE)
-    return(out)
+    out[, date := as.Date(paste0(Year,"-12-30"))]
+
+    setnames(out, "ISO3", "iso3")
+    return(out[,c("Country", "iso3", "date", "Independence", "Currency Crisis", 
+                  "Inflation Crisis", "Stock Market Crash", "Domestic Sov Debt", 
+                  "Foreign Sov Debt", "Banking Crisis", "Crisis Tally"),
+               with = FALSE])
 }

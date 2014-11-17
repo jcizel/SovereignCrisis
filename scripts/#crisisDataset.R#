@@ -46,4 +46,4 @@ tabulateCrises(
 
 
 ## BENCHMARKS
-getSovBenchmarks()
+bench <- getSovBenchmarks()

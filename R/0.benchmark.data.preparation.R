@@ -269,7 +269,12 @@ getSovBondSpreads <- function(){
 ## spread[iso3=='DEU' & year(date) > 2000, qplot(date,spread,geom = 'line')]
 
 
-
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Prepare a dataset of sovereign benchmark credit risk measures 
+##' @return data.table with the resulting data set
+##' @author Janko Cizel
 getSovBenchmarks <- function(){
     data <- list()
     data[['cds']] <- getBloombergSovCDS()
@@ -302,12 +307,38 @@ getSovBenchmarks <- function(){
         ## cat(newcols,"\n",oldcols,"\n")
         setcolorder(out,c(oldcols,newcols))
     }
+    
+    ## POST PROCESSING
+    ## ratings must be propagated forward
 
+    modCols <- c('rating','ratingnum')
+    out[
+      , paste(modCols) := lapply(.SD, na.locf, na.rm = FALSE)
+      , by = "iso3"
+      , .SDcols = modCols]
+    
     return(out)
 }
 
 ## bench <- getSovBenchmarks()
 ## summarizeDataAvailability(bench)
+
+prepareCrisisBenchmarDataset <- function()
+{
+    bench = getSovBenchmarks()
+    crises = loadCrisisDB()
+    crises[, "Sovereign Debt Crisis" := (`Foreign Sov Debt` + `Domestic Sov Debt`)>1]
+
+    bench[, year:=year(date)]
+    crises[, year:=year(date)]
+    
+    out <- 
+        merge(bench,
+              crises,
+              by = c('iso3', 'year'))
+
+    return(out)
+}
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
