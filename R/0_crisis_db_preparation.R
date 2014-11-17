@@ -100,13 +100,22 @@ createCrisisVariables <- function(crisisDT,
     return(crisis)
 }
 
-
+##' This function returns a dataset of Reinhardt and Rogoff, which dates 6
+##' different types of crises for a set of 70 countries. 
+##'
+##' TODO: RR's database ends in 2010. Update the DB by including the sovereign
+##' debt crisis episodes during 2010-2014.
+##
+##' @title Load Reinhardt and Rogoff Sovereign Crisis Database
+##' @return data.table with crisis dataset. 
+##' @author Janko Cizel
 loadCrisisDB <- function(){
     out <- fread(input = './inst/extdata/SOVEREIGN/RR-crisis.dataset.csv',
                  header = TRUE)
     out[, date := as.Date(paste0(Year,"-12-30"))]
 
     setnames(out, "ISO3", "iso3")
+    
     return(out[,c("Country", "iso3", "date", "Independence", "Currency Crisis", 
                   "Inflation Crisis", "Stock Market Crash", "Domestic Sov Debt", 
                   "Foreign Sov Debt", "Banking Crisis", "Crisis Tally"),

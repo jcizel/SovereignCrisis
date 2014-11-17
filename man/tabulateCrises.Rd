@@ -4,7 +4,7 @@
 \title{Produce a Summary Table of Sovereign Crises}
 \usage{
 tabulateCrises(crisisDT, crisisTypes = "Foreign Sov Debt", timeCol = "YEAR",
-  min.time = 1995, idCol = "iso3", file = "~/Downloads/crises.tex")
+  min.time = 1995, idCol = "iso3", outfile)
 }
 \arguments{
 \item{crisisTypes}{}
