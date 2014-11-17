@@ -200,14 +200,24 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ##' @author Janko Cizel
 plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
                                           filename = '~/Downloads/test.pdf',
-                                          adjust = FALSE){
+                                          adjust = FALSE,
+                                          plotDefinition =
+                                          list('ratingnum' =
+                                               list(x = 'ratingnum',
+                                                    xlabel = 'S&P Sovereign Credit Rating'),
+                                               'cds' =
+                                               list(x = 'cds',
+                                                    xlabel = '5-Year Sovereign CDS Spread'),
+                                               'spread' =
+                                               list(x = 'spread',
+                                                    xlabel = 'Sovereign Bond Yield Spread'))){
     dt <- prepareCrisisBenchmarkDataset()
 
     dt1 <- 
-        SovereignCrisis::createCrisisVariables(crisisDT = dt,
-                                               crisisCol = crisisType,
-                                               idCol = "iso3",
-                                               timeCol = "year")
+        createCrisisVariables(crisisDT = dt,
+                              crisisCol = crisisType,
+                              idCol = "iso3",
+                              timeCol = "year")
 
     if (adjust == TRUE){
         cols <- c('ratingnum',
@@ -220,31 +230,18 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
     }
     
     plot_list <- list()
+
+    for (x in names(plotDefinition)){
+        plot_list[[x]] <- local({
+            .t <- plotDefinition[[x]]
+            o <- .densityPlot(data = dt1,
+                              x = .t$x,
+                              xlabel = .t$label)
+            ## o <- o + scale_x_continuous(limits = c(0,10000))
+            o
+        })
+    }
     
-    plot_list[['ratingnum']] <- local({
-        o <- .densityPlot(data = dt1,
-                          x = 'ratingnum',
-                          xlabel = 'S&P Sovereign Credit Rating')
-        ## o <- o + scale_x_continuous(limits = c(0,10000))
-        o
-    })
-
-    plot_list[['cds']] <- local({
-        o <- .densityPlot(data = dt1,
-                          x = 'cds',
-                          xlabel = '5-Year Sovereign CDS Spread')
-        ## o <- o + scale_x_continuous(limits = c(0,2000))
-        o
-    })
-
-    plot_list[['spread']] <- local({
-        o <- .densityPlot(data = dt1,
-                          x = 'spread',
-                          xlabel = 'Sovereign Bond Yield Spread')
-        ## o <- o + scale_x_continuous(limits = c(0,2000))
-        o
-    })
-
     plot_list <- Filter(function(x) !"try-error" %in% class(x), plot_list)
 
     ## l <- .grabLegend(plot_list[[1]])
@@ -270,4 +267,7 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
 
 ## plotDensityAroundCrisisEvents(crisisType = "Sovereign Debt Crisis",
 ##                               filename = './inst/RESULTS/plotSovereignBenchmarkDens.pdf',
+##                               adjust = TRUE)
+
+## plotDensityAroundCrisisEvents(crisisType = "Sovereign Debt Crisis",
 ##                               adjust = TRUE)

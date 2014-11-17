@@ -61,7 +61,11 @@ eventCounter <- function(x,
 createCrisisVariables <- function(crisisDT,
                                   crisisCol = "Banking Crisis",
                                   idCol = 'iso3',
-                                  timeCol = 'date'){
+                                  timeCol = 'date',
+                                  groups =
+                                  list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+                                       "[0]"=expression(COUNTDOWN == 0),
+                                       "[1:4]"=expression(COUNTDOWN %between% c(1,4)))){
     crisis <- copy(crisisDT)
     crisis[, c('PCN','CN') := {
         ## cat("Country: ",.BY[[1]],"\n")
@@ -86,13 +90,18 @@ createCrisisVariables <- function(crisisDT,
            },
            by = get(idCol)]
 
-    crisis[, CRISIS := {
-        x <- rep(NA,times = length(COUNTDOWN))
-        x[COUNTDOWN %in% -3:0] <- 1
-        x[COUNTDOWN %in% 1:5] <- 2
-        x[is.na(x)] <- 0
-        x
-    }]
+    ## crisis[, CRISIS := {
+    ##     x <- rep(NA,times = length(COUNTDOWN))
+    ##     x[COUNTDOWN %in% -3:0] <- 1
+    ##     x[COUNTDOWN %in% 1:5] <- 2
+    ##     x[is.na(x)] <- 0
+    ##     x
+    ## }]
+
+    crisis[['CRISIS']] <- rep("CONTROL",times = length(crisis$COUNTDOWN))
+    for (x in names(groups)){
+        crisis[eval(groups[[x]]), CRISIS:= paste0(x)]
+    }
 
     ## print(data.frame(crisis[, c(idCol, timeCol, crisisCol, "PCN", "CN", "COUNTDOWN","CRISIS"),with = FALSE]),
     ##       nrows = 100)
