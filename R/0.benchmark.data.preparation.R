@@ -271,7 +271,7 @@ getSovBondSpreads <- function(){
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' TODO: Add domestic stock market index
 ##' @title Prepare a dataset of sovereign benchmark credit risk measures 
 ##' @return data.table with the resulting data set
 ##' @author Janko Cizel
@@ -323,11 +323,11 @@ getSovBenchmarks <- function(){
 ## bench <- getSovBenchmarks()
 ## summarizeDataAvailability(bench)
 
-prepareCrisisBenchmarDataset <- function()
+prepareCrisisBenchmarkDataset <- function()
 {
     bench = getSovBenchmarks()
     crises = loadCrisisDB()
-    crises[, "Sovereign Debt Crisis" := (`Foreign Sov Debt` + `Domestic Sov Debt`)>1]
+    crises[, "Sovereign Debt Crisis" := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
 
     bench[, year:=year(date)]
     crises[, year:=year(date)]

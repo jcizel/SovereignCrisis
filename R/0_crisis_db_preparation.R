@@ -121,3 +121,18 @@ loadCrisisDB <- function(){
                   "Foreign Sov Debt", "Banking Crisis", "Crisis Tally"),
                with = FALSE])
 }
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Update crisis database for the period 2010-2014 
+##' @return data.table with updated sovereign crisis indicators 
+##' @author Janko Cizel
+updateCrisisDB <- function(){
+    ## TO BE COMPLETED
+    
+    ratings <- getSPRatings()
+    ratings[ratingnum %between% c(0,1)]
+    
+    return(NULL)
+}

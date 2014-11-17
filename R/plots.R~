@@ -50,7 +50,16 @@
 
 
 
-
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Line plots of sovereign credit ratings, CDS spreads, and government
+##' bond spreads 
+##' @param isoSel ISO3 country code of a country for which the plot is to be created. 
+##' @param limits a Date vector indicating the time range of the plot
+##' @param filename path of the resulting plot (in pdf format)
+##' @return NULL
+##' @author Janko Cizel
 plotSovBenchmarks <- function(isoSel = "ARG",
                               limits = as.Date(c('1990-01-01','2013-01-01')),
                               filename = '~/Downloads/test.pdf')
@@ -134,8 +143,13 @@ plotSovBenchmarks <- function(isoSel = "ARG",
            width = 310,
            height = 210,
            units = "mm",
-           plot = g)           
+           plot = g)
+
+    return(NULL)
 }
+
+## plotSovBenchmarks(isoSel = "ARG",
+##                   filename = './inst/RESULTS/plotSovereignBenchmarkIndicators.pdf')
 
 ## plotSovBenchmarks(isoSel = "ARG")
 ## plotSovBenchmarks(isoSel = "BRA")
