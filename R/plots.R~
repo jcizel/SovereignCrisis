@@ -158,3 +158,116 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ## plotSovBenchmarks(isoSel = "PRT")
 
 
+.densityPlot <- function(data,
+                         x = 'ratingnum',
+                         xlabel = "",
+                         ylabel = "",
+                         grouplabel = "Crisis Indicator"){
+    require(ggthemes)    
+    o <- ggplot(data = data)  
+    o <- o + geom_density(aes_string(x = x,
+                                     linetype = "as.factor(CRISIS)"
+                                     )) 
+    o <- o + scale_linetype_stata() 
+    o <- o + theme_bw()             
+    o <- o + guides(size = FALSE) 
+    o <- o + theme(axis.text.x = element_text(angle = 90, hjust = 1),
+                   axis.text.y = element_text(size = 10))
+    o <- o + labs(x = xlabel,
+                  y = ylabel,
+                  linetype = grouplabel)
+    ## o <- o + theme(legend.position="none")
+    return(o)
+}
+
+#https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+.grabLegend <- function(plot){
+    tmp <- ggplot_gtable(ggplot_build(plot))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+    legend <- tmp$grobs[[leg]]
+    return(legend)
+}
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Density plots of benchmark indicators for different crisis groups 
+##' @param crisisType Type of crisis used in grouping observations
+##' @param filename path to the resulting pdf file with graph output
+##' @param adjust Adjust for time trends?
+##' @return NULL
+##' @author Janko Cizel
+plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
+                                          filename = '~/Downloads/test.pdf',
+                                          adjust = FALSE,
+                                          plotDefinition =
+                                          list('ratingnum' =
+                                               list(x = 'ratingnum',
+                                                    xlabel = 'S&P Sovereign Credit Rating'),
+                                               'cds' =
+                                               list(x = 'cds',
+                                                    xlabel = '5-Year Sovereign CDS Spread'),
+                                               'spread' =
+                                               list(x = 'spread',
+                                                    xlabel = 'Sovereign Bond Yield Spread'))){
+    dt <- prepareCrisisBenchmarkDataset()
+
+    dt1 <- 
+        createCrisisVariables(crisisDT = dt,
+                              crisisCol = crisisType,
+                              idCol = "iso3",
+                              timeCol = "year")
+
+    if (adjust == TRUE){
+        cols <- c('ratingnum',
+                  'cds',
+                  'spread')
+        dt1[, paste(cols) := lapply(.SD, function(x){
+            o <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+            return(o)
+        }), by = year, .SDcols = cols]
+    }
+    
+    plot_list <- list()
+
+    for (x in names(plotDefinition)){
+        plot_list[[x]] <- local({
+            .t <- plotDefinition[[x]]
+            o <- .densityPlot(data = dt1,
+                              x = .t$x,
+                              xlabel = .t$label)
+            ## o <- o + scale_x_continuous(limits = c(0,10000))
+            o
+        })
+    }
+    
+    plot_list <- Filter(function(x) !"try-error" %in% class(x), plot_list)
+
+    ## l <- .grabLegend(plot_list[[1]])
+
+    g <- 
+        do.call("arrangeGrob",
+                c(plot_list,
+                  list(
+                      ## legend = legend,
+                      as.table = FALSE,
+                      ncol = 1
+                      )
+                  ))
+
+    ggsave(filename = filename,
+           width = 210,
+           height = 210,
+           units = "mm",
+           plot = g)
+    
+    return(NULL)
+}
+
+## plotDensityAroundCrisisEvents(crisisType = "Sovereign Debt Crisis",
+##                               filename = './inst/RESULTS/plotSovereignBenchmarkDens.pdf',
+##                               adjust = TRUE)
+
+## plotDensityAroundCrisisEvents(crisisType = "Sovereign Debt Crisis",
+##                               adjust = TRUE)

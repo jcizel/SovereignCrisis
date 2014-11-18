@@ -211,6 +211,7 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
                                                'spread' =
                                                list(x = 'spread',
                                                     xlabel = 'Sovereign Bond Yield Spread'))){
+    require(gridExtra)
     dt <- prepareCrisisBenchmarkDataset()
 
     dt1 <- 
@@ -220,9 +221,8 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
                               timeCol = "year")
 
     if (adjust == TRUE){
-        cols <- c('ratingnum',
-                  'cds',
-                  'spread')
+        cols <- sapply(plotDefinition, function(x) x$x)
+
         dt1[, paste(cols) := lapply(.SD, function(x){
             o <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
             return(o)
@@ -232,11 +232,11 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
     plot_list <- list()
 
     for (x in names(plotDefinition)){
-        plot_list[[x]] <- local({
+        plot_list[[x]] <- try({
             .t <- plotDefinition[[x]]
             o <- .densityPlot(data = dt1,
                               x = .t$x,
-                              xlabel = .t$label)
+                              xlabel = .t$xlabel)
             ## o <- o + scale_x_continuous(limits = c(0,10000))
             o
         })
