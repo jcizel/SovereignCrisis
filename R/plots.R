@@ -62,10 +62,26 @@
 ##' @author Janko Cizel
 plotSovBenchmarks <- function(isoSel = "ARG",
                               limits = as.Date(c('1990-01-01','2013-01-01')),
-                              filename = '~/Downloads/test.pdf')
+                              filename = '~/Downloads/test.pdf',
+                              width = 320,
+                              height = 420,
+                              plotDefinition =
+                                  list('ratingnum' =
+                                           list(data = getSPRatings(),
+                                                y = 'ratingnum',
+                                                ylabel = 'S&P Sovereign Credit Rating',
+                                                idCol = 'iso3'),
+                                       'cds' =
+                                           list(data = getBloombergSovCDS(),
+                                                y = 'cds',
+                                                ylabel = '5-Year Sovereign CDS Spread',
+                                                idCol = 'iso3'),
+                                       'spread' =
+                                           list(data = getSovBondSpreads(),
+                                                y = 'spread',
+                                                ylabel = 'Sovereign Bond Yield Spread',
+                                                idCol = 'iso3')))
 {
-    x <- isoSel
-    
     crises = loadCrisisDB()
     crises[, debtcrisis := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
     crises <- 
@@ -77,49 +93,30 @@ plotSovBenchmarks <- function(isoSel = "ARG",
         )
     
     crises2 <- 
-        crises[CN>0, list(mind.event = min(get(timeCol)),
-                          maxd.event = max(get(timeCol)))
+        crises[CN>0, list(mind.event = min(date),
+                          maxd.event = max(date))
              , by = c('iso3', 'CN')]
 
     plot_list <- list()
-    plot_list[['rating']] <- try({
-        d = getSPRatings()[iso3==x]
-        if (nrow(d)==0) stop("No data available")
-        o <- .tsLinePlot(data = d,
-                         x='date',
-                         y='ratingnum',
-                         limits = limits,
-                         ylabel = "S&P Sovereign Rating"
-                         ) 
-        .crisisRegion(plot = o,
-                      crisisdata = crises2[iso3==x])
-    })
-    
-    plot_list[['cds']] <- try({
-        d <- getBloombergSovCDS()[iso3==x]
-        if (nrow(d)==0) stop("No data available")        
-        o <- .tsLinePlot(data = d,
-                         x='date',
-                         y='cds',
-                         limits = limits,                    
-                         ylabel = "5-Year Sovereign CDS Spread"
-                         ) 
-        .crisisRegion(plot = o,
-                      crisisdata = crises2[iso3==x])
-    })
 
-    plot_list[['spread']] <- try({
-        d <- getSovBondSpreads()[iso3==x]
-        if (nrow(d)==0) stop("No data available")        
-        o <- .tsLinePlot(data = d,
-                         x='date',
-                         y='spread',
-                         limits = limits,                    
-                         ylabel = "Sovereign Bond Yield Spread"
-                         )
-        .crisisRegion(plot = o,
-                      crisisdata = crises2[iso3==x])        
-    })    
+    for (x in names(plotDefinition)){
+        plot_list[[x]] <- try({
+            .t <- plotDefinition[[x]]
+
+            d <- .t$data[get(.t$idCol) == isoSel]
+            
+            if (nrow(d)==0) stop("No data available")
+            
+            o <- .tsLinePlot(data = d,
+                             x='date',
+                             y=.t$y,
+                             limits = limits,
+                             ylabel = .t$label
+                             ) 
+            .crisisRegion(plot = o,
+                          crisisdata = crises2[iso3==isoSel])
+        })        
+    }
 
     plot_list <- Filter(function(x) !"try-error" %in% class(x), plot_list)
     
@@ -129,27 +126,20 @@ plotSovBenchmarks <- function(isoSel = "ARG",
                   list(
                       as.table = FALSE,
                       ncol = 1,
-                      ## widths = 20,
-                      ## heights = 5,
                       default.units = "cm"
-                      ## main =
-                      ## textGrob(.BY,
-                      ##          gp=gpar(cex=1),
-                      ##          just="top")
                       )
                   ))
 
     ggsave(filename = filename,
-           width = 310,
-           height = 210,
+           width = width,
+           height = height,
            units = "mm",
            plot = g)
 
     return(NULL)
 }
 
-## plotSovBenchmarks(isoSel = "ARG",
-##                   filename = './inst/RESULTS/plotSovereignBenchmarkIndicators.pdf')
+plotSovBenchmarks(isoSel = "ARG")
 
 ## plotSovBenchmarks(isoSel = "ARG")
 ## plotSovBenchmarks(isoSel = "BRA")
