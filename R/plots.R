@@ -64,6 +64,8 @@
 ##' @return NULL
 ##' @author Janko Cizel
 plotSovBenchmarks <- function(isoSel = "ARG",
+                              crisisdb = loadCrisisDB(),
+                              crisistype = 'debtcrisis',
                               limits = as.Date(c('1990-01-01','2013-01-01')),
                               filename = '~/Downloads/test.pdf',
                               width = 320,
@@ -85,19 +87,26 @@ plotSovBenchmarks <- function(isoSel = "ARG",
                                                 ylabel = 'Sovereign Bond Yield Spread',
                                                 idCol = 'iso3')))
 {
-    crises = loadCrisisDB()
-    crises[, debtcrisis := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
+    crises = crisisdb
+    ## crises[, debtcrisis := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
     crises <- 
         createCrisisVariables(
             crisisDT = crises,
-            crisisCol = 'debtcrisis',
+            crisisCol = crisistype,
             idCol = 'iso3',
             timeCol = 'date'
         )
     
     crises2 <- 
-        crises[CN>0, list(mind.event = min(date),
-                          maxd.event = max(date))
+        crises[CN>0, {
+            mind.event = min(date)
+            maxd.event = max(date)
+            if (mind.event == maxd.event)
+                maxd.event = maxd.event + 365
+                
+            list(mind.event = mind.event,
+                 maxd.event = maxd.event)
+        }
              , by = c('iso3', 'CN')]
 
     plot_list <- list()
@@ -192,7 +201,8 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ##' @param adjust Adjust for time trends?
 ##' @return NULL
 ##' @author Janko Cizel
-plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
+plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
+                                          crisisType = "Sovereign Debt Crisis",
                                           filename = '~/Downloads/test.pdf',
                                           adjust = FALSE,
                                           plotDefinition =
@@ -204,15 +214,20 @@ plotDensityAroundCrisisEvents <- function(crisisType = "Sovereign Debt Crisis",
                                                     xlabel = '5-Year Sovereign CDS Spread'),
                                                'spread' =
                                                list(x = 'spread',
-                                                    xlabel = 'Sovereign Bond Yield Spread'))){
+                                                    xlabel = 'Sovereign Bond Yield Spread')),
+                                          groups =
+                                              list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+                                                   "[0]"=expression(COUNTDOWN == 0),
+                                                   "[1:4]"=expression(COUNTDOWN %between% c(1,4)))){
     require(gridExtra)
-    dt <- prepareCrisisBenchmarkDataset()
+    dt <- prepareCrisisBenchmarkDataset(crisisdb = crisisdb)
 
     dt1 <- 
         createCrisisVariables(crisisDT = dt,
                               crisisCol = crisisType,
                               idCol = "iso3",
-                              timeCol = "year")
+                              timeCol = "year",
+                              groups = groups)
 
     if (adjust == TRUE){
         cols <- sapply(plotDefinition, function(x) x$x)

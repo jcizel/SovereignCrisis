@@ -17,6 +17,7 @@ Imports:
     xlsx,
     WorldBankAPI,
     LaTeXTableGems,
+    GeneralUtilities,
     stringr
 Suggests:
     knitr,

@@ -124,24 +124,58 @@ loadCrisisDB <- function(){
     out[, date := as.Date(paste0(Year,"-12-30"))]
 
     setnames(out, "ISO3", "iso3")
+
+    out[, debtcrisis := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
     
     return(out[,c("Country", "iso3", "date", "Independence", "Currency Crisis", 
                   "Inflation Crisis", "Stock Market Crash", "Domestic Sov Debt", 
-                  "Foreign Sov Debt", "Banking Crisis", "Crisis Tally"),
+                  "Foreign Sov Debt", "Banking Crisis", "Crisis Tally", "debtcrisis"),
                with = FALSE])
 }
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
-##' @title Update crisis database for the period 2010-2014 
+##' @title Create additional credit event indicators 
 ##' @return data.table with updated sovereign crisis indicators 
 ##' @author Janko Cizel
-updateCrisisDB <- function(){
+alternativeCrisisDB <- function(){
     ## TO BE COMPLETED
+    require("GeneralUtilities")
+    require(xts)
     
     ratings <- getSPRatings()
-    ratings[ratingnum %between% c(0,1)]
-    
-    return(NULL)
+    ids = unique(ratings$iso3)
+    ids = ids[!is.na(ids) & ids!=""]
+    dates = .fCrDates(begin="1960-01-01",end="2012-12-31", frequency=apply.yearly)[[2L]] + 1
+
+    o <- CJ(iso3 = ids,date = dates)
+    setkey(o, iso3, date)
+    setkey(ratings, iso3, date)
+    out <- ratings[o, roll = 365]
+
+    modCols <- c('rating','ratingnum')
+    out[
+      , paste(modCols) := lapply(.SD, na.locf, na.rm = FALSE)
+      , by = "iso3"
+      , .SDcols = modCols]
+
+    out <- out[!is.na(rating)]
+
+    out[, ratingdif1y := shift(ratingnum, lag = -2, dif = TRUE), by = 'iso3']
+
+    ## out[, quantile(ratingdif1y,
+    ##                probs = seq(0,1,0.01),
+    ##                na.rm = TRUE)]
+
+    ## data.frame(out[ratingdif1y <= -2])
+
+    out[, ratingdrop := (ratingdif1y <= -2)*1]
+
+    out <- 
+        out[, list(iso3,
+                   date,
+                   ratingdif1y,
+                   ratingdrop)]
+    return(out)
 }

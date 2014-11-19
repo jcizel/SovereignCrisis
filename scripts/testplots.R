@@ -6,6 +6,8 @@ o <-
 ratings <- getSPRatings()
 cds <- getBloombergSovCDS()
 spreads <- getSovBondSpreads()
+alt <- getAltmanZscore()
+summarizeDataAvailability(alt)
 
 plotDefinition =
     list('ratingnum' =
@@ -28,15 +30,17 @@ plotDefinition =
                   y = 'L78CB&D',
                   ylabel = 'BOP',
                   idCol = 'iso3'),
-         'gdp' =
-             list(data = imf,
-                  y = 'L60P',
-                  ylabel = 'BOP',
+         'alt' =
+             list(data = alt,
+                  y = 'zscorepd75',
+                  ylabel = 'ZScore PD (75th perc.)',
                   idCol = 'iso3'))
 
 undebug(plotSovBenchmarks)
-plotSovBenchmarks(isoSel = "VEN",
-                  limits = as.Date(c('1995-01-01','2013-01-01')),
+plotSovBenchmarks(isoSel = "ESP",
+                  crisisdb = alternativeCrisisDB(),
+                  crisistype = 'ratingdrop',
+                  limits = as.Date(c('1995-01-01','2013-12-01')),
                   filename = '~/Downloads/test.pdf',
                   width = 320,
                   height = 420,

@@ -63,3 +63,4 @@ plotDensityAroundCrisisEvents(crisisdb = crisis,
                               groups =
                                   list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
                                        "[0]"=expression(COUNTDOWN == 0)))
+

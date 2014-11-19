@@ -323,11 +323,11 @@ getSovBenchmarks <- function(){
 ## bench <- getSovBenchmarks()
 ## summarizeDataAvailability(bench)
 
-prepareCrisisBenchmarkDataset <- function()
+prepareCrisisBenchmarkDataset <- function(crisisdb = loadCrisisDB())
 {
     bench = getSovBenchmarks()
-    crises = loadCrisisDB()
-    crises[, "Sovereign Debt Crisis" := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
+    crises = crisisdb
+    ## crises[, "Sovereign Debt Crisis" := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
 
     bench[, year:=year(date)]
     crises[, year:=year(date)]
