@@ -335,7 +335,12 @@ prepareCrisisBenchmarkDataset <- function(crisisdb = loadCrisisDB())
     out <- 
         merge(bench,
               crises,
-              by = c('iso3', 'year'))
+              by = c('iso3', 'year'),
+              suffixes =
+              c('Bench',
+                'Crisis'))
+
+    setnames(out, 'dateBench', 'date')
 
     return(out)
 }

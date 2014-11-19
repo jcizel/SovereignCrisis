@@ -22,3 +22,21 @@ getAltmanZscore <- function(){
     
     return(out)
 }
+
+augmentBenchmarkDataset <-
+    function(crisisdb = loadCrisisDB(),
+             dtList =
+                 list("alt" = getAltmanZscore())){
+
+        dt <- prepareCrisisBenchmarkDataset(crisisdb = crisisdb)
+        setkey(dt, iso3, date)
+
+        if (length(dtList)>0){
+            for (x in names(dtList)){
+                .d <- copy(dtList[[x]])
+                setkey(.d, iso3, date)
+                dt <- .d[dt, roll = TRUE]
+            }
+        }
+        return(dt)
+    }

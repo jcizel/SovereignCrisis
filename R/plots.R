@@ -205,6 +205,10 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                                           crisisType = "Sovereign Debt Crisis",
                                           filename = '~/Downloads/test.pdf',
                                           adjust = FALSE,
+                                          width = 320,
+                                          height = 420,
+                                          dtList =
+                                              list("alt" = getAltmanZscore()),
                                           plotDefinition =
                                           list('ratingnum' =
                                                list(x = 'ratingnum',
@@ -220,7 +224,8 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                                                    "[0]"=expression(COUNTDOWN == 0),
                                                    "[1:4]"=expression(COUNTDOWN %between% c(1,4)))){
     require(gridExtra)
-    dt <- prepareCrisisBenchmarkDataset(crisisdb = crisisdb)
+    dt <- augmentBenchmarkDataset(crisisdb = crisisdb,
+                                  dtList = dtList)
 
     dt1 <- 
         createCrisisVariables(crisisDT = dt,

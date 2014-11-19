@@ -45,3 +45,36 @@ plotSovBenchmarks(isoSel = "ESP",
                   width = 320,
                   height = 420,
                   plotDefinition = plotDefinition)
+
+
+## -------------------------------------------------------------------------- ##
+## CHECK DENSITY PLOTS AROUND EVENT                                           ##
+## -------------------------------------------------------------------------- ##
+alt <- getAltmanZscore()
+crisis <- alternativeCrisisDB()
+bench <- getSovBenchmarks()
+
+dt <- augmentBenchmarkDataset()
+## undebug(plotDensityAroundCrisisEvents)
+plotDensityAroundCrisisEvents(crisisdb = loadCrisisDB(),                              
+                              crisisType = "debtcrisis",
+                              adjust = TRUE,
+                              plotDefinition =
+                                  list('ratingnum' =
+                                           list(x = 'ratingnum',
+                                                xlabel = 'S&P Sovereign Credit Rating'),
+                                       'cds' =
+                                           list(x = 'cds',
+                                                xlabel = '5-Year Sovereign CDS Spread'),
+                                       'spread' =
+                                           list(x = 'spread',
+                                                xlabel = 'Sovereign Bond Yield Spread'),
+                                       'zscorepd75' =
+                                           list(x = 'zscorepd75',
+                                                xlabel = "")),
+                              groups =
+                                  list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+                                       "[0]"=expression(COUNTDOWN == 0),
+                                       "[1:4]"=expression(COUNTDOWN %between% c(1,4))))
+
+
