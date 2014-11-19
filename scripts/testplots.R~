@@ -1,0 +1,6 @@
+plotSovBenchmarks(isoSel = "ARG",
+                  limits = as.Date(c('1990-01-01','2013-01-01')),
+                  filename = '~/Downloads/test.pdf',
+                  width = 320,
+                  height = 420,
+                  plotDefinition = plotDefinition)

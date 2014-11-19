@@ -48,7 +48,10 @@
 ##        filename = filename)
 
 
-
+.removeSpecialCharacters <- function(str){
+    o <- gsub(pattern = "[[:punct:]]",".",str)
+    return(o)
+}
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -103,15 +106,16 @@ plotSovBenchmarks <- function(isoSel = "ARG",
         plot_list[[x]] <- try({
             .t <- plotDefinition[[x]]
 
-            d <- .t$data[get(.t$idCol) == isoSel]
+            d <- .t$data[get(.t$idCol) == isoSel][, c('date',.t$y), with = FALSE]
+            setnames(d,names(d),.removeSpecialCharacters(names(d)))
             
             if (nrow(d)==0) stop("No data available")
             
             o <- .tsLinePlot(data = d,
                              x='date',
-                             y=.t$y,
+                             y=.removeSpecialCharacters(.t$y),
                              limits = limits,
-                             ylabel = .t$label
+                             ylabel = .t$ylabel
                              ) 
             .crisisRegion(plot = o,
                           crisisdata = crises2[iso3==isoSel])
@@ -139,7 +143,7 @@ plotSovBenchmarks <- function(isoSel = "ARG",
     return(NULL)
 }
 
-plotSovBenchmarks(isoSel = "ARG")
+## plotSovBenchmarks(isoSel = "ARG")
 
 ## plotSovBenchmarks(isoSel = "ARG")
 ## plotSovBenchmarks(isoSel = "BRA")
