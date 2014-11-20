@@ -162,7 +162,7 @@ alternativeCrisisDB <- function(){
 
     out <- out[!is.na(rating)]
 
-    out[, ratingdif1y := shift(ratingnum, lag = -2, dif = TRUE), by = 'iso3']
+    out[, ratingdif1y := GeneralUtilities:::shift(ratingnum, lag = -2, dif = TRUE), by = 'iso3']
 
     ## out[, quantile(ratingdif1y,
     ##                probs = seq(0,1,0.01),

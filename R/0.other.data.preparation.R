@@ -5,8 +5,8 @@ getAltmanZscore <- function(){
 
     alt[, date := {
         d <- DATE
-        year = as.numeric(sapply(str_split(d, ":"), function(x) x[[1]]))
-        quarter = as.numeric(sapply(str_split(d, ":"), function(x) x[[2]]))
+        year = as.numeric(sapply(stringr:::str_split(d, ":"), function(x) x[[1]]))
+        quarter = as.numeric(sapply(stringr:::str_split(d, ":"), function(x) x[[2]]))
         as.Date(paste0(year,"-",quarter*3,"-30"), format = "%Y-%m-%d")
     }]
     
@@ -27,6 +27,8 @@ augmentBenchmarkDataset <-
     function(crisisdb = loadCrisisDB(),
              dtList =
                  list("alt" = getAltmanZscore())){
+        require(xlsx)
+        require(xts)
 
         dt <- prepareCrisisBenchmarkDataset(crisisdb = crisisdb)
         setkey(dt, iso3, date)

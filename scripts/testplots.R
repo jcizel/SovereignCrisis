@@ -55,6 +55,7 @@ crisis <- alternativeCrisisDB()
 bench <- getSovBenchmarks()
 
 dt <- augmentBenchmarkDataset()
+## undebug(.fCrDates)
 ## undebug(plotDensityAroundCrisisEvents)
 plotDensityAroundCrisisEvents(crisisdb = loadCrisisDB(),                              
                               crisisType = "debtcrisis",

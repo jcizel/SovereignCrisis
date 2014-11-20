@@ -92,7 +92,7 @@
     dates <- seq(from = as.Date(begin), to=as.Date(end),by=1)
     dates <- xts(dates,order.by=dates)
     dates <- data.frame(date=frequency(dates, tail, n=1))
-    dates <- data.table(dates)[,list(tix = seq_along(date), date = as.Date(date))]
+    dates <- data.table(dates)[,list(tix = seq_along(date), date = xts:::as.Date.numeric(date))]
     return(dates)
 }
 
@@ -162,8 +162,8 @@ getIMFIFS <- function(){
                     header = TRUE
                     )
 
-    lookup <- read.xlsx2(file = './inst/extdata/IMF/IFS/IMF-IFS_variables.xlsx',
-                         sheetIndex = 1 )
+    lookup <- xlsx:::read.xlsx2(file = './inst/extdata/IMF/IFS/IMF-IFS_variables.xlsx',
+                                sheetIndex = 1 )
     l <- data.table(lookup)
 
     o1 <- 
@@ -193,16 +193,16 @@ getIMFIFS <- function(){
 ##' @return data.table of results
 ##' @author Janko Cizel
 getSovBondSpreads <- function(){
-    spread <- read.xlsx2(file = "./inst/extdata/World Bank/GEM/Sovereign Bond Interest Rate Spreads, basis points over US Treasuries.xlsx",
-                       sheetName = "monthly",
-                       header = TRUE,
-                       check.names = FALSE
-                       )[-1,]
+    spread <- xlsx:::read.xlsx2(file = "./inst/extdata/World Bank/GEM/Sovereign Bond Interest Rate Spreads, basis points over US Treasuries.xlsx",
+                                sheetName = "monthly",
+                                header = TRUE,
+                                check.names = FALSE
+                                )[-1,]
     spread <- data.table(spread)
 
     spread[, date := {
-        year = as.numeric(sapply(str_split(obs, "M"), function(x) x[[1]]))
-        month = as.numeric(sapply(str_split(obs, "M"), function(x) x[[2]]))
+        year = as.numeric(sapply(stringr:::str_split(obs, "M"), function(x) x[[1]]))
+        month = as.numeric(sapply(stringr:::str_split(obs, "M"), function(x) x[[2]]))
         as.Date(paste0(year,"-",month,"-01"), format = "%Y-%m-%d")
     }]
 

@@ -5,7 +5,7 @@
                         format = "%Y",
                         xlabel = "",
                         ylabel = ""){
-    require(scales)
+    ## require(scales)
     o <- ggplot(data = data)
     o <- o + geom_step(aes_string(x = x,
                                   y = y))
@@ -166,12 +166,11 @@ plotSovBenchmarks <- function(isoSel = "ARG",
                          xlabel = "",
                          ylabel = "",
                          grouplabel = "Crisis Indicator"){
-    require(ggthemes)    
     o <- ggplot(data = data)  
     o <- o + geom_density(aes_string(x = x,
                                      linetype = "as.factor(CRISIS)"
                                      )) 
-    o <- o + scale_linetype_stata() 
+    o <- o + ggthemes::scale_linetype_stata() 
     o <- o + theme_bw()             
     o <- o + guides(size = FALSE) 
     o <- o + theme(axis.text.x = element_text(angle = 90, hjust = 1),
@@ -223,7 +222,6 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                                               list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
                                                    "[0]"=expression(COUNTDOWN == 0),
                                                    "[1:4]"=expression(COUNTDOWN %between% c(1,4)))){
-    require(gridExtra)
     dt <- augmentBenchmarkDataset(crisisdb = crisisdb,
                                   dtList = dtList)
 
@@ -233,6 +231,12 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                               idCol = "iso3",
                               timeCol = "year",
                               groups = groups)
+
+    dt1[,{
+        cat(.BY[[1]],"\n")
+        paste(unique(paste0(iso3,"-",year)),
+              collapse = ";")
+    }, by = CRISIS]
 
     if (adjust == TRUE){
         cols <- sapply(plotDefinition, function(x) x$x)
@@ -271,8 +275,8 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                   ))
 
     ggsave(filename = filename,
-           width = 210,
-           height = 210,
+           width = width,
+           height = height,
            units = "mm",
            plot = g)
     

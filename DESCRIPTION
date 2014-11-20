@@ -6,12 +6,12 @@ Authors@R: as.person(c(
 Description: What the package does (one paragraph)
 Depends:
     R (>= 3.1.1),
-    data.table
-Imports:
     data.table,
-    zoo,
     xts,
     ggplot2,
+    scales,
+    gridExtra
+Imports:
     gridExtra,
     xtable,
     xlsx,
@@ -20,7 +20,6 @@ Imports:
     GeneralUtilities,
     stringr
 Suggests:
-    knitr,
     testthat
 LazyData: true
 VignetteBuilder: knitr
