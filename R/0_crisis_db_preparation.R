@@ -40,13 +40,50 @@ eventCounter <- function(x,
                 out = c(out,i)
             }            
         }
+        
         ## cat("Counter: ",tail(out,1),"\n")
     }
     ## cat("###  END OF COUNTING  ###.\n")
     return(out)    
 }    
- 
 
+.checkCrisisStatusEndOfSeries <- function(x,
+                                          success = 0,
+                                          failure = 1){
+    .x <- rev(x)
+    i = 1
+    out <- c()
+    for (y in 1:length(.x)){
+        if (y == 1){
+            if (is.na(.x[y])) out = c(out,NA)
+            else if (.x[y] == failure) out = c(out,i)
+            else if (.x[y] == success) {
+                out <- rep(0, times = length(.x))
+                break
+            }
+        } else {
+            if (is.na(.x[y])){
+                if (is.na(.x[y-1])) out = c(out,0)
+                else if (.x[y-1] == success) {out = c(out,0)}
+                else if (.x[y-1] == failure) {out = c(out,i);}
+            }
+            else if (.x[y] == success){
+                if (is.na(.x[y-1])) {out = c(out,0);}
+                else if (.x[y-1] == success) {out = c(out,0);}
+                else if (.x[y-1] == failure) {out = c(out,0);i=i+1;}
+            } else if (.x[y] == failure) {
+                out = c(out,i)
+            }            
+        }        
+    }
+    out[out>1] <- 0
+    out <- rev(out)
+    return(out)        
+}
+
+## .t <- dt1[(iso3=='RUS')][date>'1960-01-01']
+## .t <- .t[,list(date, iso3, debtcrisis)]
+## .t[, S:=.checkCrisisStatusEndOfSeries(debtcrisis*1,success = 1, failure = 0)]
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -67,15 +104,17 @@ createCrisisVariables <- function(crisisDT,
                                        "[0]"=expression(COUNTDOWN == 0),
                                        "[1:4]"=expression(COUNTDOWN %between% c(1,4)))){
     crisis <- copy(crisisDT)
-    crisis[, c('PCN','CN') := {
+    crisis[, c('PCN','CN','S') := {
         ## cat("Country: ",.BY[[1]],"\n")
         list(eventCounter(get(crisisCol),success = 1,failure = 0),
-             eventCounter(get(crisisCol),success = 0,failure = 1))
+             eventCounter(get(crisisCol),success = 0,failure = 1),
+             .checkCrisisStatusEndOfSeries(get(crisisCol),success = 1, failure = 0))
     }
          , by = idCol ]
 
     crisis <- crisis[order(get(idCol),-get(timeCol))]
-    crisis[PCN > 0, COUNTDOWN := -(0:(.N-1))
+    crisis[PCN > 0 & (S!=1),
+           COUNTDOWN := -(0:(.N-1))
          , by = c(idCol,'PCN')]
     
     crisis <- crisis[order(get(idCol),get(timeCol))]

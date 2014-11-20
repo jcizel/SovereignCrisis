@@ -160,12 +160,20 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ## plotSovBenchmarks(isoSel = "GRC")
 ## plotSovBenchmarks(isoSel = "PRT")
 
+.createNoteOnCrisisEpisodes <- function(data){
+    data[CRISIS == '[0]',{
+        cat(.BY[[1]],"\n")
+        paste(unique(paste0(iso3,"-",year)),
+              collapse = "; ")
+    }, by = CRISIS][[2]]
+}
 
 .densityPlot <- function(data,
                          x = 'ratingnum',
                          xlabel = "",
                          ylabel = "",
                          grouplabel = "Crisis Indicator"){
+    episodes <- .createNoteOnCrisisEpisodes(data = data[!is.na(get(x))])
     o <- ggplot(data = data)  
     o <- o + geom_density(aes_string(x = x,
                                      linetype = "as.factor(CRISIS)"
@@ -178,6 +186,16 @@ plotSovBenchmarks <- function(isoSel = "ARG",
     o <- o + labs(x = xlabel,
                   y = ylabel,
                   linetype = grouplabel)
+    
+    ## ADD A NOTE CONTAINING CRISIS PERIODS INCLUDED IN THE PLOT
+    o <- arrangeGrob(o,
+                     sub =
+                         textGrob(paste0("Crisis episodes: ",episodes,"."),
+                                  x = 0,
+                                  hjust = -0.1,
+                                  vjust=0.1,
+                                  gp = gpar(fontface = "italic", fontsize = 5)))
+    
     ## o <- o + theme(legend.position="none")
     return(o)
 }
@@ -201,7 +219,7 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ##' @return NULL
 ##' @author Janko Cizel
 plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
-                                          crisisType = "Sovereign Debt Crisis",
+                                          crisisType = "debtcrisis",
                                           filename = '~/Downloads/test.pdf',
                                           adjust = FALSE,
                                           width = 320,
@@ -231,12 +249,7 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
                               idCol = "iso3",
                               timeCol = "year",
                               groups = groups)
-
-    dt1[,{
-        cat(.BY[[1]],"\n")
-        paste(unique(paste0(iso3,"-",year)),
-              collapse = ";")
-    }, by = CRISIS]
+    
 
     if (adjust == TRUE){
         cols <- sapply(plotDefinition, function(x) x$x)

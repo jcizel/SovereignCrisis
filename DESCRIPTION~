@@ -1,8 +1,0 @@
-Package: SovereignCrisis
-Title: What the package does (one line)
-Version: 0.1
-Authors@R: Janko Cizel <jcizel@gmail.com> [aut, cre]
-Description: What the package does (one paragraph)
-Depends: R (>= 3.1.1)
-License: What license is it under?
-LazyData: true
