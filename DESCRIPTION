@@ -10,15 +10,14 @@ Depends:
     xts,
     ggplot2,
     scales,
-    gridExtra
-Imports:
     gridExtra,
+    GeneralUtilities
+Imports:
     xtable,
     xlsx,
-    WorldBankAPI,
+    stringr,
     LaTeXTableGems,
-    GeneralUtilities,
-    stringr
+    WorldBankAPI
 Suggests:
     testthat
 LazyData: true

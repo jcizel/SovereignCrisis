@@ -192,7 +192,7 @@ plotSovBenchmarks <- function(isoSel = "ARG",
                      sub =
                          textGrob(paste0("Crisis episodes: ",episodes,"."),
                                   x = 0,
-                                  hjust = -0.1,
+                                  hjust = 0,
                                   vjust=0.1,
                                   gp = gpar(fontface = "italic", fontsize = 5)))
     

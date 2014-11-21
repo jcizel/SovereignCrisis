@@ -180,13 +180,12 @@ loadCrisisDB <- function(){
 ##' @author Janko Cizel
 alternativeCrisisDB <- function(){
     ## TO BE COMPLETED
-    require("GeneralUtilities")
-    require(xts)
-    
     ratings <- getSPRatings()
     ids = unique(ratings$iso3)
     ids = ids[!is.na(ids) & ids!=""]
-    dates = .fCrDates(begin="1960-01-01",end="2012-12-31", frequency=apply.yearly)[[2L]] + 1
+##     dates = .fCrDates(begin="1960-01-01",end="2012-12-31",
+## frequency=apply.yearly)[[2L]] + 1
+    dates = .fCrDates(begin="1960-01-01",end="2012-12-31",frequency=apply.yearly)[[2L]] 
 
     o <- CJ(iso3 = ids,date = dates)
     setkey(o, iso3, date)
@@ -201,7 +200,9 @@ alternativeCrisisDB <- function(){
 
     out <- out[!is.na(rating)]
 
-    out[, ratingdif1y := GeneralUtilities:::shift(ratingnum, lag = -2, dif = TRUE), by = 'iso3']
+    ## BEGINNING OF THE CRISIS IS THE YEAR WHEN RATINGS BEGIN A 2-YEAR DROP OF
+    ## MORE THAN 2 NOTCHES.
+    out[, ratingdif1y := GeneralUtilities:::shift(ratingnum, lag = +1, dif = TRUE), by = 'iso3']
 
     ## out[, quantile(ratingdif1y,
     ##                probs = seq(0,1,0.01),
@@ -209,7 +210,8 @@ alternativeCrisisDB <- function(){
 
     ## data.frame(out[ratingdif1y <= -2])
 
-    out[, ratingdrop := (ratingdif1y <= -2)*1]
+    ## out[, ratingdrop := (ratingdif1y <= -2)*1]
+    out[, ratingdrop := (ratingdif1y >= 2)*1]
 
     out <- 
         out[, list(iso3,

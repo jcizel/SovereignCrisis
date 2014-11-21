@@ -42,3 +42,122 @@ augmentBenchmarkDataset <-
         }
         return(dt)
     }
+
+getBISHousePrices <- function(){
+    dt <- fread(input = "inst/extdata/BIS House Prices/BIS House Price DB.csv")
+    s <- fread(input = "inst/extdata/BIS House Prices/BIS static selection.csv")
+
+    setnames(dt, names(dt), stringr:::str_trim(names(dt)))
+    dt[, date := as.Date(as.character(Period), format = "%d.%m.%Y")]
+    dt[, Period := NULL]
+
+    dt <- data.table:::melt.data.table(dt,
+                                       id.vars = c("date"),
+                                       variable.name = "ixname",
+                                       value.name = "dtix"
+                                       )
+
+    s[, ixname := paste0("Q",Code)]
+
+    dtsel <- dt[ixname %in% s$ixname]
+
+    dtsel <-
+        merge(dtsel,
+              s[, list(ixname,
+                       country = `Reference area`,
+                       iso3 = ISO3)],
+              by = "ixname")
+
+    out <-
+        dtsel[, list(
+            iso3,
+            date,
+            houseix = as.numeric(dtix))][!is.na(houseix)]
+    
+    return(out)
+}
+
+
+getWB.WDI <- function(){
+    wdi <- fread("./inst/extdata/World Bank/WDI World Development Indicators.csv",
+                 header = TRUE
+                 )
+
+    vars.keep <- c("Country Code",
+                   "Indicator Code",
+                   grep("[[:digit:]]{4}", names(wdi), value = TRUE))
+
+    wdi <-
+        wdi[, vars.keep, with = FALSE]
+
+    setnames(wdi, c("Country Code","Indicator Code"), c("iso3","variable"))
+
+    wdi <- data.table:::melt.data.table(wdi,
+                                        id.vars = c("iso3","variable"),
+                                        variable.name = "year")
+
+    wdi[, year := as.numeric(as.character(year))]
+    wdi[, date := .toDate(paste0(year,"-01-01"))]
+
+    wdi <- 
+        data.table:::dcast.data.table(wdi,
+                                      iso3 + date ~ variable,
+                                      value.var = "value")
+    return(wdi)
+}
+
+## wdi <- getWB.WDI()
+
+
+getWB.GEM <- function(){
+    wb.gem <- fread(input ="./inst/extdata/World Bank/Source_GlobalEconomicMonitor.csv",
+                    header = TRUE)
+
+    wb.gem[, date := {
+        as.Date(paste0(as.numeric(date),"-12-01"), format = "%Y-%m-%d")
+    }]
+
+    wb.gem <-
+        wb.gem[, list(iso2 = country.id,
+                      date,
+                      variable = indicator.id,
+                      value)]
+
+    wb.gem <- wb.gem[!is.na(value) & value != "" & iso2 != ""]
+
+    wb.gem <- wb.gem[!is.na(date)]
+
+    wb.gem[, value:= as.numeric(value)]
+    wb.gem[, dup:=.N, by = list(iso2,date,variable)]
+
+    wb.gem[dup>1][order(iso2,variable,date)]
+
+    wb.gem <- 
+        data.table:::dcast.data.table(wb.gem,
+                                      iso2 + date ~ variable,
+                                      value.var = "value")
+
+    wb.gem <- 
+        merge(wb.gem,
+              isotran,
+              by = "iso2")
+
+    wb.gem[, iso2:=NULL]
+
+    return(wb.gem)
+}
+
+getRR.debt <- function(){
+    debt <- fread("./inst/extdata/Reinhart and Rogoff DB/Government Debt/Debt Variables.csv",
+                  header = TRUE
+                  )
+
+    debt[, date := as.Date(paste0(year,"-01-01"), format = "%Y-%m-%d")]
+
+    debtfinal <- debt[, .SD
+                    , .SDcols = -"country"]
+    
+    return(debtfinal)
+}
+
+## getRR.debt()
