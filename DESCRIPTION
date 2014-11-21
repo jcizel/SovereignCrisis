@@ -17,7 +17,8 @@ Imports:
     xlsx,
     stringr,
     LaTeXTableGems,
-    WorldBankAPI
+    WorldBankAPI,
+    SDMXWrappers
 Suggests:
     testthat
 LazyData: true

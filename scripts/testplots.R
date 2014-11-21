@@ -103,3 +103,46 @@ plotDensityAroundCrisisEvents(crisisdb = alternativeCrisisDB(),
                                        "[1:4]"=expression(COUNTDOWN %between% c(1,4))))
 
 
+## -------------------------------------------------------------------------- ##
+## TRY WITH WORLD BANK DATA                                                   ##
+## -------------------------------------------------------------------------- ##
+require(doParallel)
+require(foreach)
+q <- WorldBankAPI:::queryWorldBankVariableList('interest payment')
+o <- WorldBankAPI:::getWorldBankDataSeries(indicators = q$id)
+unique(o[country.id == 'US'])
+dt <- unique(o[indicator.id == 'GC.XPN.INTP.RV.ZS'])
+dt[,iso3 := .lookupISOCode(query = country.id)]
+
+plotDensityAroundCrisisEvents(crisisdb = loadCrisisDB(),                              
+                              crisisType = "debtcrisis",
+                              adjust = TRUE,
+                              filename = '~/Downloads/test.pdf',
+                              dtList =
+                                  list('wb' = dt),
+                              plotDefinition =
+                                  list(
+                                      't' =
+                                          list(x = 'value',
+                                               xlabel = unique(dt$indicator.value))),
+                              groups =
+                                  list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+                                       "[0]"=expression(COUNTDOWN == 0),
+                                       "[1:4]"=expression(COUNTDOWN %between% c(1,4))))
+
+
+plotEventStudy(crisisdb = loadCrisisDB(),                              
+               crisisType = "debtcrisis",
+               adjust = TRUE,
+               filename = '~/Downloads/test.pdf',
+               dtList =
+                   list('wb' = dt),
+               plotDefinition =
+                   list(
+                       't' =
+                           list(y = 'value',
+                                ylabel = unique(dt$indicator.value))),
+               groups =
+                   list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+                        "[0]"=expression(COUNTDOWN == 0),
+                        "[1:4]"=expression(COUNTDOWN %between% c(1,4))))

@@ -161,7 +161,7 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 ## plotSovBenchmarks(isoSel = "PRT")
 
 .createNoteOnCrisisEpisodes <- function(data){
-    data[CRISIS == '[0]',{
+    data[COUNTDOWN == 0,{
         cat(.BY[[1]],"\n")
         paste(unique(paste0(iso3,"-",year)),
               collapse = "; ")
@@ -302,3 +302,128 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
 
 ## plotDensityAroundCrisisEvents(crisisType = "Sovereign Debt Crisis",
 ##                               adjust = TRUE)
+
+
+
+.tsBoxPlot <- function(data,
+                       x = 'as.factor(COUNTDOWN)',
+                       y,
+                       limits = c(-5,5),
+                       xlabel = "",
+                       ylabel = ""){
+    episodes <- .createNoteOnCrisisEpisodes(data = data[!is.na(get(y))])
+    
+    d <- data[COUNTDOWN %between% limits]
+
+    ## compute lower and upper whiskers
+    ## .ylim = boxplot.stats(data[[y]])$stats[c(1, 5)]
+
+    o <- ggplot(data = d)
+    o <- o + geom_boxplot(aes_string(x = x,
+                                     y = y))
+    o <- o + theme_bw()
+    o <- o + theme(axis.text.x = element_text(angle = 90, hjust = 1),
+                   axis.text.y = element_text(size = 10))
+    o <- o + labs(x = xlabel,
+                  y = ylabel)
+    ## o <- o + coord_cartesian(ylim = ylim1*1.05)
+
+    ## ADD A NOTE CONTAINING CRISIS PERIODS INCLUDED IN THE PLOT
+    o <- arrangeGrob(o,
+                     sub =
+                         textGrob(paste0("Crisis episodes: ",episodes,"."),
+                                  x = 0,
+                                  hjust = 0,
+                                  vjust=0.1,
+                                  gp = gpar(fontface = "italic", fontsize = 5)))    
+    return(o)
+}
+
+## .tsBoxPlot(data = dt1,
+##            y = 'ratingnum')
+
+
+plotEventStudy <- function(
+    crisisdb = loadCrisisDB(),
+    crisisType = "debtcrisis",
+    filename = '~/Downloads/test.pdf',
+    adjust = FALSE,
+    limits = c(-5,5),
+    width = 320,
+    height = 420,
+    dtList =
+        list("alt" = getAltmanZscore()),
+    plotDefinition =
+        list('ratingnum' =
+                 list(y = 'ratingnum',
+                      ylabel = 'S&P Sovereign Credit Rating'),
+             'cds' =
+                 list(y = 'cds',
+                      ylabel = '5-Year Sovereign CDS Spread'),
+             'spread' =
+                 list(y = 'spread',
+                      ylabel = 'Sovereign Bond Yield Spread')),
+    groups =
+        list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
+             "[0]"=expression(COUNTDOWN == 0),
+             "[1:4]"=expression(COUNTDOWN %between% c(1,4))))
+{
+    dt <- augmentBenchmarkDataset(crisisdb = crisisdb,
+                                  dtList = dtList)
+
+    dt1 <- 
+        createCrisisVariables(crisisDT = dt,
+                              crisisCol = crisisType,
+                              idCol = "iso3",
+                              timeCol = "year",
+                              groups = groups)
+    
+
+    if (adjust == TRUE){
+        cols <- sapply(plotDefinition, function(x) x$y)
+
+        dt1[, paste(cols) := lapply(.SD, function(x){
+            o <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+            return(o)
+        }), by = year, .SDcols = cols]
+    }
+    
+    plot_list <- list()
+
+    for (x in names(plotDefinition)){
+        plot_list[[x]] <- try({
+            .t <- plotDefinition[[x]]
+            o <- .tsBoxPlot(data = dt1,
+                            y = .t$y,
+                            ylabel = .t$ylabel,
+                            limits = limits)
+            ## o <- o + scale_x_continuous(limits = c(0,10000))
+            o
+        })
+    }
+    
+    plot_list <- Filter(function(x) !"try-error" %in% class(x), plot_list)
+
+    ## l <- .grabLegend(plot_list[[1]])
+
+    g <- 
+        do.call("arrangeGrob",
+                c(plot_list,
+                  list(
+                      ## legend = legend,
+                      as.table = FALSE,
+                      ncol = 1
+                  )
+                  ))
+
+    ggsave(filename = filename,
+           width = width,
+           height = height,
+           units = "mm",
+           plot = g)
+    
+    return(NULL)
+}
+
+## plotEventStudy(adjust = TRUE,
+##                limits = c(-5,2))
