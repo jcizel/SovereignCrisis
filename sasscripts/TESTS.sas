@@ -1,0 +1,38 @@
+X "cd ~/PACKAGES/SovereignCrisis";
+
+%INCLUDE "./sas/SETENVIR.sas";
+%INCLUDE "./sas/AGGREGATIONS.sas";
+%INCLUDE "../WRDSHelpers/sas/quickfunctions.sas";
+%INCLUDE "/wrds/wrdsmacros/winsorize.sas";
+%INCLUDE "/wrds/wrdsmacros/nwords.sas";
+%INCLUDE "/wrds/wrdsmacros/csv.sas";
+
+PROC DATASETS LIB = BS;
+QUIT;
+
+PROC CONTENTS DATA = BS.BS_FINANCIALS OUT = _VARLIST VARNUM; RUN;
+%CONTENTS(DATA = _VARLIST);
+    
+PROC SQL;
+    CREATE TABLE _RATIOS AS
+        SELECT NAME, LABEL
+        FROM _VARLIST
+        WHERE UPCASE(LABEL) LIKE "%RATIO%";
+QUIT;
+
+PROC PRINT DATA = _RATIOS; RUN;
+PROC PRINT DATA = _VARLIST(KEEP = NAME LABEL); RUN;
+
+PROC TRANSPOSE
+    DATA = BS.BS_FINANCIALS
+    OUT = BSFIN_LONG;
+    BY CLOSDATE INDEX;
+RUN;
+
+    
+%AGGREGATE(
+    IN = BS.BS_FINANCIALS,
+   OUT = TEST,
+   BY = CLOSDATE INDEX,
+    
+    )
