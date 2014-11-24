@@ -160,4 +160,85 @@ getRR.debt <- function(){
     return(debtfinal)
 }
 
-## getRR.debt()
+## rrdebt <- getRR.debt()
+
+
+## ratings <- getSPRatings()
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Create a IMF-IFS dataset 
+##' @return data.table with resulting dataset (attribute 'colnames') contains
+##' labeling information of variables.
+##' @author Janko Cizel
+getIMFIFS <- function(){
+    imfifs <- fread(input = "./inst/extdata/IMF/IFS/IMF-IFS_annual.csv",
+                    header = TRUE
+                    )
+
+    o1 <- 
+        imfifs[!is.na(value) &
+                   !is.na(iso3),
+               list(iso3,
+                    date = .toDate(date),
+                    varcode,
+                    value)]
+
+    o2 <-
+        data.table:::dcast.data.table(o1,
+                                      iso3 + date ~ varcode,
+                                      value.var = "value")
+
+    return(o2)
+}
+
+## imf <- getIMFIFS()
+
+
+getIMFListOfVariables <- function(update = FALSE){
+    .files <- list.files('./inst/extdata')
+    if (('IMFListOfVariables.csv' %in% .files) && (update==FALSE)){
+        out <- fread(input = './inst/extdata/IMFListOfVariables.csv')
+    } else {
+        lookup <- xlsx:::read.xlsx2(file = './inst/extdata/IMF/IFS/IMF-IFS_variables.xlsx',
+                                    sheetIndex = 1 )
+        .o1 <- 
+            data.table(lookup)[, list(name = Variable,
+                                      label = paste0(Table,": ", Concept,", ", scale_desc))]
+
+        imfifs <- fread(input = "./inst/extdata/IMF/IFS/IMF-IFS_annual.csv",
+                        header = TRUE
+                        )
+        
+        .o2 <- summarizeDataAvailability(dt = getIMFIFS())
+        
+        .o3 <- imfifs[!is.na(iso3) & !is.na(value), {
+            list(
+                concept_desc = unique(concept_desc),
+                scale_desc = paste(unique(scale_desc), collapse = "; "),
+                unit_desc = paste(unique(unit_desc), collapse = "; "),
+                frequency_desc = paste(unique(frequency_desc), collapse = "; ")                
+            )
+        }
+                      , by = 'varcode']
+
+        ## JOIN
+        setkey(.o1, name)
+        setkey(.o2, variable)
+        setkey(.o3, varcode)
+
+        out <- .o1[.o2]
+        out <- .o3[out]
+        
+        write.csv(x = out,
+                  file = './inst/extdata/IMFListOfVariables.csv')
+    }
+
+    return(out[,list(name = variable,
+                     label = label)])
+}
+
+
+## imflist <- getIMFListOfVariables(update = TRUE)
+## imflist[label %like2% 'government']
+

@@ -149,42 +149,6 @@ getSPRatings <- function(){
     return(out)
 }
 
-## ratings <- getSPRatings()
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
-##' @title Create a IMF-IFS dataset 
-##' @return data.table with resulting dataset (attribute 'colnames') contains
-##' labeling information of variables.
-##' @author Janko Cizel
-getIMFIFS <- function(){
-    imfifs <- fread(input = "./inst/extdata/IMF/IFS/IMF-IFS_annual.csv",
-                    header = TRUE
-                    )
-
-    lookup <- xlsx:::read.xlsx2(file = './inst/extdata/IMF/IFS/IMF-IFS_variables.xlsx',
-                                sheetIndex = 1 )
-    l <- data.table(lookup)
-
-    o1 <- 
-        imfifs[!is.na(value) &
-                   !is.na(iso3),
-               list(iso3,
-                    date = .toDate(date),
-                    varcode,
-                    value)]
-
-    o2 <-
-        data.table:::dcast.data.table(o1,
-                                      iso3 + date ~ varcode,
-                                      value.var = "value")
-
-    attributes(o2)$colnames <- l
-
-    return(o2)
-}
-
-## imf <- getIMFIFS()
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -361,7 +325,7 @@ summarizeDataAvailability <- function(dt,
     long <- data.table:::melt.data.table(dt,
                                          id.vars = c(idCol,timeCol))[!is.na(value)]
 
-    out <- 
+    .o1 <- 
         long[,
              {
                  d <- get(timeCol)
@@ -380,10 +344,30 @@ summarizeDataAvailability <- function(dt,
                         o <- paste(
                             paste0(get(idCol)," (",period,")"),
                             collapse = "; "
-                        )
+                        )                        
                         list(Availability = o)
                     }
                   , keyby = 'variable']
+
+    ## DETERMINE THE NUMBER OF COUNTRIES AND NON-MISSING OBSERVATIONS FOR EACH
+    ## VARIABLE
+    .o2 <- 
+        long[,{
+            time <- data.table:::year(date)
+
+            list(
+                yearmin = min(time),
+                yearmax = max(time),
+                numiso = length(unique(iso3)),
+                numobs = nrow(.SD)
+            )
+        }
+           , by = 'variable']
+
+    setkey(.o1, variable)
+    setkey(.o2, variable)    
+
+    out <- .o2[.o1]
 
     return(out)
 }

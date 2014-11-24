@@ -259,14 +259,16 @@ plotDensityAroundCrisisEvents <- function(crisisdb = loadCrisisDB(),
             return(o)
         }), by = year, .SDcols = cols]
     }
+
+    setnames(dt1,names(dt1),.removeSpecialCharacters(names(dt1)))
     
     plot_list <- list()
 
-    for (x in names(plotDefinition)){
+    for (x in 1:length(plotDefinition)){
         plot_list[[x]] <- try({
             .t <- plotDefinition[[x]]
             o <- .densityPlot(data = dt1,
-                              x = .t$x,
+                              x = .removeSpecialCharacters(.t$x),
                               xlabel = .t$xlabel)
             ## o <- o + scale_x_continuous(limits = c(0,10000))
             o
@@ -387,14 +389,16 @@ plotEventStudy <- function(
             return(o)
         }), by = year, .SDcols = cols]
     }
+
+    setnames(dt1,names(dt1),.removeSpecialCharacters(names(dt1)))
     
     plot_list <- list()
 
-    for (x in names(plotDefinition)){
+    for (x in 1:length(plotDefinition)){
         plot_list[[x]] <- try({
             .t <- plotDefinition[[x]]
             o <- .tsBoxPlot(data = dt1,
-                            y = .t$y,
+                            y = .removeSpecialCharacters(.t$y),
                             ylabel = .t$ylabel,
                             limits = limits)
             ## o <- o + scale_x_continuous(limits = c(0,10000))
