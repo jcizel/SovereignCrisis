@@ -73,3 +73,28 @@ OPTIONS PS=MAX;
     %MEND;
 
 
+%MACRO AGGREGATE_BANKSCOPE(
+    OUT=
+    );
+    %PREPROCESS_BANKSCOPE(OUT = __BSFIN__);
+
+    %CONTENTS(DATA = __BSFIN__);
+
+    PROC SORT DATA = __BSFIN__; BY CTRYCODE INDEX DATE; RUN;
+    PROC TRANSPOSE
+    DATA = __BSFIN__ 
+        OUT = __BSFIN_LONG__;
+        BY CTRYCODE INDEX DATE;
+        VAR DATA2000 -- DATA38430;
+    RUN;
+
+    %CONTENTS(DATA = __BSFIN_LONG__);
+
+    %AGGREGATE(
+        IN = __BSFIN_LONG__,
+        OUT = &OUT.,
+        BY = CTRYCODE DATE,
+        VAR = COL1
+        );
+
+    %MEND;
