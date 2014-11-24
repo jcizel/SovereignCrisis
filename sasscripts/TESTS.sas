@@ -1,6 +1,7 @@
 X "cd ~/PACKAGES/SovereignCrisis";
 
 %INCLUDE "./sas/SETENVIR.sas";
+%INCLUDE "./sas/0.CreateDataset.sas";
 %INCLUDE "./sas/AGGREGATIONS.sas";
 %INCLUDE "../WRDSHelpers/sas/quickfunctions.sas";
 %INCLUDE "/wrds/wrdsmacros/winsorize.sas";
@@ -28,11 +29,24 @@ PROC TRANSPOSE
     OUT = BSFIN_LONG;
     BY CLOSDATE INDEX;
 RUN;
+%CONTENTS(DATA = BSFIN_LONG);
+%PRINT(DATA = BSFIN_LONG);
 
-    
+
+%PREPROCESS_BANKSCOPE(OUT = BSFIN);
+
 %AGGREGATE(
-    IN = BS.BS_FINANCIALS,
+    IN = BSFIN,
    OUT = TEST,
-   BY = CLOSDATE INDEX,
-    
-    )
+   BY = CLOSDATE INDEX    
+    );
+
+
+
+
+/* PROC FREQ DATA = BS.BS_BANK; TABLE CONSOL SPECIAL; RUN; */
+/* %CONTENTS(DATA = BS.BS_BANK); */
+
+/* OPTIONS LS = 100; */
+/* PROC MEANS DATA = __TEMP3__; RUN; */
+/* PROC MEANS DATA = BS.BS_FINANCIALS; RUN; */
