@@ -34,6 +34,7 @@ OPTIONS PS=MAX;
             A.NAME,
             A.CONSOL,
             A.CTRYCODE,
+            B.EXCHRATE,
             B.*
 
             FROM
@@ -147,8 +148,71 @@ OPTIONS PS=MAX;
     %AGGREGATE(
         IN = __BSFIN_LONG__,
         OUT = &OUT.,
-        BY = CTRYCODE DATE,
+        BY = _NAME_ _LABEL_ CTRYCODE DATE,
         VAR = COL1
         );
+
+    %MEND;
+
+%MACRO BANK_PD_DATASET(
+    OUT=
+    );
+    %PREPROCESS_BANKSCOPE(OUT = __BSFIN__);
+
+    PROC SQL;
+        CREATE TABLE &OUT. AS
+            SELECT
+            INDEX,
+            DATE,
+            YEAR,
+            NAME,
+            CONSOL,
+            CTRYCODE,
+            EXCHRATE,
+
+            /* ============================================================== */
+            /* SIZE                                                           */
+            /* ============================================================== */
+            DATA2055,
+            CASE
+            WHEN UNIT = "bil" THEN (EXCHRATE * DATA2025 * 1000)
+            WHEN UNIT = "mil" THEN (EXCHRATE * DATA2025)
+            WHEN UNIT = "th" THEN (EXCHRATE * DATA2025 / 1000) 
+            ELSE (EXCHRATE * DATA2025)
+            END AS TOTASSUSD,            
+            LOG(CALCULATED TOTASSUSD)    AS LOGASS       LABEL "Logarithm of Total Book Assets",
+
+            /* ============================================================== */
+            /* CAPITAL                                                        */
+            /* ============================================================== */
+            DATA2055 / DATA2025          AS DATA2055_R   LABEL "Equity / Total Assets",
+            DATA30680/100                AS C16          LABEL "Regulatory Tier 1 Capital Ratio",
+            (DATA30690 - DATA30680)/100  AS C17          LABEL "Regulatory Tier 2 Capital Ratio" ,
+            DATA18342/DATA2025           AS C15          LABEL "Risk-Weighted Assets / Total Book Assets",
+            /* ============================================================== */
+            /* ASSET QUALITY                                                  */
+            /* ============================================================== */
+            (DATA18215)/100              AS DATA18215    LABEL "Unreserved Impaired Loans / Equity",
+            DATA2095 / DATA2001          AS C26          LABEL "Loan Loss Provisions / Gross Loans",        
+            /* ============================================================== */
+            /* MANAGEMENT QUALITY                                             */
+            /* ============================================================== */
+            (DATA18070)/100              AS DATA18070    LABEL "Non-Interest Expense/ Gross Revenues",
+            DATA18045 / DATA2025         AS DATA18045_R  LABEL "Total Non-Interest Expenses / Total Assets",
+            /* ============================================================== */
+            /* EARNING QUALITY                                                */
+            /* ============================================================== */
+            DATA4024/100                 AS DATA4024     LABEL "Return On Avg Assets (ROA)" ,
+            DATA4025/100                 AS DATA4025     LABEL "Return On Avg Equity (ROE)",
+            DATA4018 / DATA2025          AS DATA4018_R   LABEL "Net Interest Margin / Total Assets",
+            DATA18045/100                AS DATA18045    LABEL "Interest Expense / Interest-Bearing Liab.",
+            /* ============================================================== */
+            /* LIQUIDITY                                                      */
+            /* ============================================================== */
+            DATA4034/100                 AS DATA4034     LABEL "Net Loans / Tot Dep and Bor",
+            DATA4035/100                 AS DATA4035     LABEL "Liquid Assets / Dep and ST Funding"
+
+            FROM __BSFIN__;
+    QUIT;
 
     %MEND;

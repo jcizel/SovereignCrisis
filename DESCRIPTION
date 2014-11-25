@@ -7,14 +7,17 @@ Description: What the package does (one paragraph)
 Depends:
     R (>= 3.1.1),
     data.table,
+    xlsx,
     xts,
     ggplot2,
     scales,
     gridExtra,
-    GeneralUtilities
+    GGally,
+    GeneralUtilities,
+    foreach,
+    doParallel
 Imports:
     xtable,
-    xlsx,
     stringr,
     LaTeXTableGems,
     WorldBankAPI,

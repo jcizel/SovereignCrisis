@@ -20,13 +20,23 @@ dt[, `:=`(rating.dif = shift(ratingnum, dif = TRUE, relative = FALSE),
           spread.dif = shift(spread, dif = TRUE, relative = FALSE)), by = iso3]
 
 varsel <- c('ratingnum','cds','spread','zscorepd75')
-dt[, paste0(varsel,'.dif') := lapply(.SD, function(x) shift(x, dif = TRUE, relative = FALSE))
+dt[, paste0(varsel,'.dif') := lapply(.SD, function(x) {
+    o <- winsorize(x, method = 'IQR', k = 2, trim = FALSE)
+    o <- shift(o, dif = TRUE, relative = FALSE)
+    o
+})
    , by = c('iso3'),
    , .SDcols = varsel]
+
 
 p <- ggplot(data = dt)
 p <- p + geom_point(aes_string(x = 'spread.dif',
                                y = 'zscorepd75.dif'))
+p <- p + theme_bw()
+p
+
+## matrix
+p <- ggpairs(data = dt[, paste0(varsel,'.dif'), with = FALSE])
 p <- p + theme_bw()
 p
 
