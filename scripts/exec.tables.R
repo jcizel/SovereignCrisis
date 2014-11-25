@@ -37,6 +37,8 @@ dt[, paste0(varsel,'.dif') := lapply(.SD, function(x) {
 
 sel <- 'zscorepd75'
 vars <- c('cds','ratingnum','spread')
+
+sel <- 'zscorepd75.dif'
 vars <- c('cds.dif','ratingnum.dif','spread.dif')
 
 dt[, {

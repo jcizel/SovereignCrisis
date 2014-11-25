@@ -113,7 +113,8 @@ OPTIONS PS=MAX;
     (IN=,
      OUT=,
      BY= FIC DATE,
-     VAR = PD_PU60_US_SEL3);
+     VAR = PD_PU60_US_SEL3,
+     WEIGHT = );
 
     PROC SORT DATA = &IN. OUT = __T; BY &BY; RUN; 
     PROC UNIVARIATE
@@ -122,6 +123,11 @@ OPTIONS PS=MAX;
         NOPRINT;
         BY &BY.;
         VAR &VAR.;
+
+        %IF "&WEIGHT." NE "" %THEN
+            %DO;
+            WEIGHT &WEIGHT.;
+            %END;
     RUN;
 
     PROC SORT DATA = &OUT.; BY &BY; RUN;
@@ -218,7 +224,8 @@ OPTIONS PS=MAX;
     %MEND;
 
 %MACRO BANK_PD_DATASET(
-    OUT= 
+    OUT=,
+    WEIGHT= 
     );
     %BANK_DATASET_SELECTION(OUT = __BSSEL__);
 
@@ -247,13 +254,30 @@ OPTIONS PS=MAX;
         OUT = __T2_LONG__;
         BY CTRYCODE INDEX DATE;
         VAR DATA2055 -- SC_OBR_EU;
-    RUN;    
+    RUN;
+
+    %IF "&WEIGHT." NE "" %THEN
+        %DO;
+        PROC SQL;
+            CREATE TABLE __T2_LONG__ AS
+                SELECT
+                A.*,
+                B.&WEIGHT.
+                FROM
+                __T2_LONG__ AS A,
+                __BSSEL__ (KEEP = INDEX DATE &WEIGHT.) AS B
+                WHERE
+                A.INDEX = B.INDEX AND
+                A.DATE = B.DATE;
+        QUIT;
+        %END;
 
     %AGGREGATE(
         IN = __T2_LONG__,
         OUT = &OUT.,
         BY = _NAME_ _LABEL_ CTRYCODE DATE,
-        VAR = COL1
+        VAR = COL1,
+        WEIGHT = &WEIGHT.
         );
     
     

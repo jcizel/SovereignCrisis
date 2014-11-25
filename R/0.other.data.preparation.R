@@ -1,4 +1,4 @@
-getAggregatedBankscope <- function(stat = '_MEDIAN_'){
+getAggregatedBankscopeDatabase <- function(stat = '_MEDIAN_'){
     bs <- fread('./inst/extdata/Bank PDs/BSFIN_AGGREGATED.csv')
     bs[, iso3 := .lookupISOCode(CTRYCODE)]
     bs[, date := as.Date(as.character(DATE), format = "%Y%m%d")]
@@ -15,7 +15,29 @@ getAggregatedBankscope <- function(stat = '_MEDIAN_'){
         formula = as.formula(.f),
         value.var = stat
     )
+    return(o)
 }
+
+getAggregatedBankscopePDs <- function(stat = '_MEDIAN_'){
+    bs <- fread('./inst/extdata/Bank PDs/BANK_PD_DATASET.csv')
+    bs[, iso3 := .lookupISOCode(CTRYCODE)]
+    bs[, date := as.Date(as.character(DATE), format = "%Y%m%d")]
+
+    setnames(bs,
+             names(bs),
+             gsub('[[:punct:]]','.',names(bs)))
+
+    stat <- gsub('[[:punct:]]','.',stat)
+    
+    .f <- paste0('iso3 + date ~ .NAME.')
+    o <- data.table:::dcast.data.table(
+        data = bs[!is.na(iso3)],
+        formula = as.formula(.f),
+        value.var = stat
+    )
+    return(o)
+}
+## pd <- getAggregatedBankscopePDs()
 
 getAltmanZscore <- function(){
 
