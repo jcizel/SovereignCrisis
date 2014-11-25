@@ -1,3 +1,22 @@
+getAggregatedBankscope <- function(stat = '_MEDIAN_'){
+    bs <- fread('./inst/extdata/Bank PDs/BSFIN_AGGREGATED.csv')
+    bs[, iso3 := .lookupISOCode(CTRYCODE)]
+    bs[, date := as.Date(as.character(DATE), format = "%Y%m%d")]
+
+    setnames(bs,
+             names(bs),
+             gsub('[[:punct:]]','.',names(bs)))
+
+    stat <- gsub('[[:punct:]]','.',stat)
+    
+    .f <- paste0('iso3 + date ~ .NAME.')
+    o <- data.table:::dcast.data.table(
+        data = bs[!is.na(iso3)],
+        formula = as.formula(.f),
+        value.var = stat
+    )
+}
+
 getAltmanZscore <- function(){
 
     alt <- fread(input = './inst/extdata/Altman PDs/ZSCORE_AGGREGATED.csv')
@@ -27,14 +46,12 @@ augmentBenchmarkDataset <-
     function(crisisdb = loadCrisisDB(),
              dtList =
                  list("alt" = getAltmanZscore())){
-        require(xlsx)
-        require(xts)
 
         dt <- prepareCrisisBenchmarkDataset(crisisdb = crisisdb)
         setkey(dt, iso3, date)
 
         if (length(dtList)>0){
-            for (x in names(dtList)){
+            for (x in 1:length(dtList)){
                 .d <- copy(dtList[[x]])
                 setkey(.d, iso3, date)
                 dt <- .d[dt, roll = TRUE]
