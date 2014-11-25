@@ -154,7 +154,7 @@ OPTIONS PS=MAX;
 
     %MEND;
 
-%MACRO BANK_PD_DATASET(
+%MACRO BANK_DATASET_SELECTION(
     OUT=
     );
     %PREPROCESS_BANKSCOPE(OUT = __BSFIN__);
@@ -215,4 +215,46 @@ OPTIONS PS=MAX;
             FROM __BSFIN__;
     QUIT;
 
+    %MEND;
+
+%MACRO BANK_PD_DATASET(
+    OUT= 
+    );
+    %BANK_DATASET_SELECTION(OUT = __BSSEL__);
+
+    /* ====================================================================== */
+    /* STANDARDIZE VARIABLES (BANKING MODEL WAS RAN ON STANDARDIZED           */
+    /* VARIABLES)                                                             */
+    /* ====================================================================== */
+    PROC STDIZE
+    DATA = __BSSEL__
+        OUT = __T__
+        METHOD = STD;
+        VAR DATA2055--DATA4035;
+    RUN;    
+    
+
+    DATA __T2__;
+        SET __T__;
+
+        SC_CLOSURE_ALL = -3.21 * C16 + 0.365 * C15 + 0.199 * DATA18215 + 0.284 * C26 + 0.724 * DATA18045 - 0.33 * DATA4018_R + 0.145 * DATA18070;
+        SC_OBR_EU = -0.715 * C16 + 0.369 * C15 + 0.087 * DATA18215 + 0.271 * C26;
+    RUN;
+
+    PROC SORT DATA = __T2__; BY CTRYCODE INDEX DATE; RUN;
+    PROC TRANSPOSE
+    DATA = __T2__ 
+        OUT = __T2_LONG__;
+        BY CTRYCODE INDEX DATE;
+        VAR DATA2055 -- SC_OBR_EU;
+    RUN;    
+
+    %AGGREGATE(
+        IN = __T2_LONG__,
+        OUT = &OUT.,
+        BY = _NAME_ _LABEL_ CTRYCODE DATE,
+        VAR = COL1
+        );
+    
+    
     %MEND;
