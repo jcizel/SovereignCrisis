@@ -110,3 +110,63 @@ tabulateDataAvailability <- function(dt,
 ##                              outfile = "./inst/RESULTS/availability.tex",
 ##                              lookup.table = lookup.table,
 ##                              selCols = c("label", "Availability"))
+
+
+tabulateCorrelations <- function(
+    data =
+        augmentBenchmarkDataset(crisisdb = alternativeCrisisDB(),
+                                dtList = list(getAltmanZscore(),
+                                              getAggregatedBankscopePDs())),
+    var = c('zscorepd75','SC_CLOSURE_ALL.Q3.','SC_OBR_EU.Q3.'),
+    method = 'pearson',
+    dif = FALSE,
+    lag = -1,
+    by = 'iso3',
+    outfile = './inst/RESULTS/tabulateCorrelations.tex'
+){
+    if (!inherits(data, 'data.table')) stop('Data must be a data.table.')
+    
+    if (dif == TRUE){
+        dt <- 
+            GeneralUtilities:::shiftData(
+                data = dt,
+                var = var,
+                replace = TRUE,
+                by = by,
+                lag = lag,
+                dif = TRUE
+            )
+    } else {
+        dt <- copy(data)
+    }
+    
+    output.list <-
+        foreach (x = var,
+                 .errorhandling = 'remove') %do% {
+            analyseCorrelationsOverTime(data = dt, xvar = x, method = method)
+        }    
+
+    t <-
+        Reduce(function(...) merge(..., by = 'date', all = TRUE), output.list)
+
+    t <- t[date > '2004-01-01']
+    t[, date := year(date)]
+
+    out <- LaTeXTableGems:::dataTableToInnerLatex(t,
+                                                  outfile = outfile)
+
+    return(output.list)
+}
+
+t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex')
+t2 <- tabulateCorrelations(dif = TRUE,
+                           lag = -1,
+                           outfile = './inst/RESULTS/tabulateCorrelations-dif.tex')
+
+t1 <- tabulateCorrelations(method = 'spearman',
+                           outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
+t2 <- tabulateCorrelations(method = 'spearman',
+                           dif = TRUE,
+                           lag = -1,
+                           outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
+## 

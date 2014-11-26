@@ -18,25 +18,44 @@ getAggregatedBankscopeDatabase <- function(stat = '_MEDIAN_'){
     return(o)
 }
 
-getAggregatedBankscopePDs <- function(stat = '_MEDIAN_'){
+getAggregatedBankscopePDs <- function(
+    vars = c('SC_CLOSURE_ALL','SC_OBR_EU'),
+    stats = c('_MEDIAN_','_Q3_','_P90_')
+)
+{
     bs <- fread('./inst/extdata/Bank PDs/BANK_PD_DATASET.csv')
     bs[, iso3 := .lookupISOCode(CTRYCODE)]
     bs[, date := as.Date(as.character(DATE), format = "%Y%m%d")]
-
     setnames(bs,
              names(bs),
              gsub('[[:punct:]]','.',names(bs)))
 
-    stat <- gsub('[[:punct:]]','.',stat)
+    bs <- bs[.NAME. %in% vars]
+
+    dt.list <- 
+        foreach(x = stats) %do% {
+            .s <- gsub('[[:punct:]]','.',x)
+            
+            .f <- paste0('iso3 + date ~ .NAME.')
+            o <- data.table:::dcast.data.table(
+                data = bs[!is.na(iso3)],
+                formula = as.formula(.f),
+                value.var = .s
+            )
+            
+            cols <- setdiff(names(o),c('iso3','date'))
+            setnames(o,
+                     cols,
+                     paste0(cols,.s))
+            return(copy(o))
+        }
+
+    out <-
+        Reduce(function(...) merge(..., by = c('iso3','date')), dt.list)
     
-    .f <- paste0('iso3 + date ~ .NAME.')
-    o <- data.table:::dcast.data.table(
-        data = bs[!is.na(iso3)],
-        formula = as.formula(.f),
-        value.var = stat
-    )
-    return(o)
+    return(out)
 }
+
 ## pd <- getAggregatedBankscopePDs()
 
 getAltmanZscore <- function(){

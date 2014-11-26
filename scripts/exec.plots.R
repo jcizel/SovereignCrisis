@@ -6,6 +6,7 @@ spreads <- getSovBondSpreads()
 alt     <- getAltmanZscore()
 imf     <- getIMFIFS()
 bs      <- getAggregatedBankscope()
+pd      <- getAggregatedBankscopePDs()
 
 dt <- augmentBenchmarkDataset(
     crisisdb = crisis1,
@@ -68,13 +69,13 @@ plotDefinition =
                   ylabel = 'BOP',
                   idCol = 'iso3'),
          'alt' =
-             list(data = alt,
-                  y = 'zscorepd75',
-                  ylabel = 'ZScore PD (75th perc.)',
+             list(data = pd,
+                  y = 'SC_CLOSURE_ALL',
+                  ylabel = 'Banking Score',
                   idCol = 'iso3'))
 
-undebug(plotSovBenchmarks)
-plotSovBenchmarks(isoSel = "ESP",
+## undebug(plotSovBenchmarks)
+plotSovBenchmarks(isoSel = "NLD",
                   crisisdb = alternativeCrisisDB(),
                   crisistype = 'ratingdrop',
                   limits = as.Date(c('1995-01-01','2013-12-01')),
@@ -88,6 +89,9 @@ plotSovBenchmarks(isoSel = "ESP",
 ##                               DENSITY PLOTS                                ##
 ## -------------------------------------------------------------------------- ##
 
+dtList =
+    list(pd)
+
 plotDefinition <- 
     list('ratingnum' =
              list(x = 'ratingnum',
@@ -98,8 +102,8 @@ plotDefinition <-
          'spread' =
              list(x = 'spread',
                   xlabel = 'Sovereign Bond Yield Spread'),
-         'zscorepd75' =
-             list(x = 'zscorepd75',
+         'pd' =
+             list(x = 'SC_CLOSURE_ALL',
                   xlabel = ""))
 
 groups <-
@@ -110,38 +114,49 @@ groups <-
 plotDensityAroundCrisisEvents(crisisdb = loadCrisisDB(),                              
                               crisisType = "debtcrisis",
                               adjust = TRUE,
-                              filename = './inst/RESULTS/plotSovereignBenchmarkDens.pdf',                            
+                              filename = './inst/RESULTS/plotSovereignBenchmarkDens.pdf',
+                              dtList = dtList,
                               plotDefinition = plotDefinition,
-                              groups =
-                                  list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
-                                       "[0]"=expression(COUNTDOWN == 0),
-                                       "[1:4]"=expression(COUNTDOWN %between% c(1,4))))
+                              groups = groups)
+
+plotDensityAroundCrisisEvents(crisisdb = loadCrisisDB(),                              
+                              crisisType = "debtcrisis",
+                              adjust = TRUE,
+                              ## filename = './inst/RESULTS/plotSovereignBenchmarkDens.pdf',
+                              dtList = dtList,
+                              plotDefinition = plotDefinition,
+                              groups = groups)
+                                  
 
 ## -------------------------------------------------------------------------- ##
 ##                               EVENT STUDY                                  ##
 ## -------------------------------------------------------------------------- ##
 plotDefinition <- 
     list(                       
-        list(y = 'value',
-             ylabel = unique(dt$indicator.value)),
-        list(y = 'DE_G_GDP_COMP',
-             ylabel = 'Debt to GDP'),
-        list(y = 'DT.DOD.DIMF.CD',
-             ylabel = 'Use of Funds'))
+        ## list(y = 'value',
+        ##      ylabel = unique(dt$indicator.value)),
+        ## list(y = 'DE_G_GDP_COMP',
+        ##      ylabel = 'Debt to GDP'),
+        ## list(y = 'DT.DOD.DIMF.CD',
+        ##      ylabel = 'Use of Funds'),
+        list(y = 'SC_CLOSURE_ALL',
+             ylabel = '')
+    )
 
 groups =
     list("[-4:-1]"=expression(COUNTDOWN %between% c(-4,-1)),
          "[0]"=expression(COUNTDOWN == 0),
          "[1:4]"=expression(COUNTDOWN %between% c(1,4)))
-
+dtList =
+    list('wb' = dt,
+         'rrdebt' = getRR.debt(),
+         'imf' = getIMFIFS(),
+         'pd' = pd)
 
 plotEventStudy(crisisdb = loadCrisisDB(),                              
                crisisType = "debtcrisis",
                adjust = TRUE,
                filename = '~/Downloads/test.pdf',
-               dtList =
-                   list('wb' = dt,
-                        'rrdebt' = getRR.debt(),
-                        'imf' = getIMFIFS()),
+               dtList = dtList,
                plotDefinition = plotDefinition,
                groups = groups)
