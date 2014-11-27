@@ -59,13 +59,18 @@ dt <-
                             dtList = dtList)
 
 
-r1 <- analyseCorrelationsOverTime(data = dt, xvar = 'zscorepd50')
-r2 <- analyseCorrelationsOverTime(data = dt, xvar = 'zscorepd75')
-r3 <- analyseCorrelationsOverTime(data = dt, xvar = 'zscorepd90')
-r4 <- analyseCorrelationsOverTime(data = dt, xvar = 'SC_CLOSURE_ALL.Q3.')
-r5 <- analyseCorrelationsOverTime(data = dt, xvar = 'SC_CLOSURE_ALL.P90.') 
-r6 <- analyseCorrelationsOverTime(data = dt, xvar = 'SC_OBR_EU.Q3.')
-r7 <- analyseCorrelationsOverTime(data = dt, xvar = 'SC_OBR_EU.P90.') 
+LaTeXTableGems:::createLatexTableHeader(outfile = './inst/RESULTS/tabulateCorrelations-head.tex')
+t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex')
+t2 <- tabulateCorrelations(dif = TRUE,
+                           lag = -1,
+                           outfile = './inst/RESULTS/tabulateCorrelations-dif.tex')
+
+t3 <- tabulateCorrelations(method = 'spearman',
+                           outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
+t4 <- tabulateCorrelations(method = 'spearman',
+                           dif = TRUE,
+                           lag = -1,
+                           outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
 
 
 
@@ -94,31 +99,3 @@ dt <- augmentBenchmarkDataset(
 
 
 
-varsel <- c('ratingnum','cds','spread','zscorepd75')
-dt[, paste0(varsel,'.dif') := lapply(.SD, function(x) {
-    o <- winsorize(x, method = 'IQR', k = 2, trim = FALSE)
-    o <- shift(o, dif = TRUE, relative = FALSE)
-    o
-})
-   , by = c('iso3'),
-   , .SDcols = varsel]
-
-
-
-sel <- 'zscorepd75'
-vars <- c('cds','ratingnum','spread')
-
-sel <- 'zscorepd75.dif'
-vars <- c('cds.dif','ratingnum.dif','spread.dif')
-
-dt[, {
-    o <- 
-        foreach(x = vars) %do% {
-            cor(get(x), get(sel),
-                use = 'pairwise.complete.obs')
-        }
-    names(o) <- vars
-
-    o
-}
-   , by = date]

@@ -129,7 +129,7 @@ tabulateCorrelations <- function(
     if (dif == TRUE){
         dt <- 
             GeneralUtilities:::shiftData(
-                data = dt,
+                data = data,
                 var = var,
                 replace = TRUE,
                 by = by,
@@ -158,15 +158,17 @@ tabulateCorrelations <- function(
     return(output.list)
 }
 
-t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex')
-t2 <- tabulateCorrelations(dif = TRUE,
-                           lag = -1,
-                           outfile = './inst/RESULTS/tabulateCorrelations-dif.tex')
+## debug(LaTeXTableGems:::createLatexTableHeader)
+## LaTeXTableGems:::createLatexTableHeader(outfile = './inst/RESULTS/tabulateCorrelations-head.tex')
+## t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex')
+## t2 <- tabulateCorrelations(dif = TRUE,
+##                            lag = -1,
+##                            outfile = './inst/RESULTS/tabulateCorrelations-dif.tex')
 
-t1 <- tabulateCorrelations(method = 'spearman',
-                           outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
-t2 <- tabulateCorrelations(method = 'spearman',
-                           dif = TRUE,
-                           lag = -1,
-                           outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
+## t1 <- tabulateCorrelations(method = 'spearman',
+##                            outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
+## t2 <- tabulateCorrelations(method = 'spearman',
+##                            dif = TRUE,
+##                            lag = -1,
+##                            outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
 ## 
