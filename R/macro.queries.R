@@ -11,15 +11,31 @@ queryECBVariableList <- function(pattern){
     return(out)
 }
 
-compressECBVariableList <- function(pattern,id.pos = 3){
-    dt <- queryECBVariableList(pattern)
-
-    dt[, ID.new := {
+compressECBVariableList <- function(data,id.pos = 3){
+    ## dt <- queryECBVariableList(pattern)   
+    dt <- copy(data)
+    
+    dt[, ID.new  := {
         ID %>>%
         stringr:::str_split('\\.') %>>%
-        (x ~ list.map(x, paste0(.[-id.pos],collapse = '.'))) %>>%
+        (x ~ list.map(x, {
+            s <- .
+            s[id.pos] <- '*'
+            paste(s,collapse = '.')
+        })) %>>%
         unlist
     }]
+
+    dt[, query  := {
+        ID %>>%
+        stringr:::str_split('\\.') %>>%
+        (x ~ list.map(x, {
+            s <- .
+            s[id.pos] <- '[A-Z]+'
+            paste(s,collapse = '.')
+        })) %>>%
+        unlist
+    }]    
 
     dt[, extract := {
         ID %>>%
@@ -37,15 +53,82 @@ compressECBVariableList <- function(pattern,id.pos = 3){
             yearmax = max(YEARMAX),
             unit = .condense(UNIT),
             unit.mult = .condense(UNIT_MULT),
-            db = .condense(db)
+            db = .condense(db),
+            query = unique(query)
         )
          , by = ID.new]
     return(out)
 }
 
+## pattern = queryECBVariableList('gross external debt') %>>% compressECBVariableList %>>% (query)
+constructECBDataset <- function(
+    pattern = queryECBVariableList('gross external debt') %>>% compressECBVariableList %>>% (query) %>>% paste0(collapse = '|'),
+    id.pos = 3,
+    tsdata = fread(input = '../SDMXWrappers/inst/extdata/ECB-TS.csv',drop = "V1")
+){
+    o <- tsdata
+
+    dt <- o[grepl(pattern = pattern,ID,perl = FALSE)]
+
+    dt[, ID.new  := {
+        ID %>>%
+        stringr:::str_split('\\.') %>>%
+        (x ~ list.map(x, {
+            s <- .
+            s[id.pos] <- '*'
+            paste(s,collapse = '.')
+        })) %>>%
+        unlist
+    }]
+
+    dt[, iso3 := {
+        ID %>>%
+        stringr:::str_split('\\.') %>>%
+        (x ~ list.map(x, .[id.pos])) %>>%
+        unlist %>>% .lookupISOCode
+    }]
+
+    out <- 
+        data.table:::dcast.data.table(dt,
+                                      DATE + iso3 ~ ID.new,
+                                      value.var = 'VALUE')
+
+    out[, date := {
+        
+        DATE %>>%
+        stringr:::str_split('Q') %>>%
+        (x ~ list.map(x, {
+            o <- as.numeric(.)
+            year = o[[1]]
+            qtr = o[[2]]
+
+            date <- 
+                switch(qtr,
+                       paste0(year,'-03-15'),
+                       paste0(year,'-06-15'),
+                       paste0(year,'-09-15'),
+                       paste0(year,'-12-15'))
+            date
+        })) %>>% unlist %>>% as.Date
+    }]
+
+    s <- fread(input = '../SDMXWrappers/inst/extdata/ECB-VariableList.csv')
+    
+    out <-
+        structure(out,
+                  lookup = s[grepl(pattern = pattern,ID,perl = FALSE)] %>>% compressECBVariableList)
+
+    return(out)
+}
+
+## tsdata = fread(input = '../SDMXWrappers/inst/extdata/ECB-TS.csv',drop = "V1")
+## ecb = constructECBDataset(tsdata = tsdata)
+
+
 ## queryECBVariableList('debt')
 ## compressECBVariableList('debt')[numiso > 10]
 ## compressECBVariableList('gross external debt')[numiso > 10]
+## compressECBVariableList('interbank')[numiso > 10]
 ## compressECBVariableList('yield')[numiso > 10]
 
 getIMFListOfVariables <- function(update = FALSE){

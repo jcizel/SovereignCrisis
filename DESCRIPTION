@@ -20,7 +20,8 @@ Imports:
     xtable,
     stringr,
     LaTeXTableGems,
-    WorldBankAPI
+    WorldBankAPI,
+    lubridate
 Suggests:
     testthat
 LazyData: true
