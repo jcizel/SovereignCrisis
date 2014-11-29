@@ -19,7 +19,7 @@ analyseCorrelationsOverTime <- function(
 
                     paste0(round(.c,3)," [N=",.n,"]")
                 }
-            names(o) <- vars
+            names(o) <- benchVars
             o
         }
          , keyby = timeVar]

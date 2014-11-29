@@ -118,33 +118,30 @@ tabulateCorrelations <- function(
                                 dtList = list(getAltmanZscore(),
                                               getAggregatedBankscopePDs())),
     var = c('zscorepd75','SC_CLOSURE_ALL.Q3.','SC_OBR_EU.Q3.'),
+    benchVars = c('ratingnum','spread','cds'),
+    convert = 'shift(lag=-1,dif = TRUE)',
     method = 'pearson',
-    dif = FALSE,
-    lag = -1,
     by = 'iso3',
     outfile = './inst/RESULTS/tabulateCorrelations.tex'
 ){
     if (!inherits(data, 'data.table')) stop('Data must be a data.table.')
     
-    if (dif == TRUE){
-        dt <- 
-            GeneralUtilities:::shiftData(
-                data = data,
-                var = var,
-                replace = TRUE,
-                by = by,
-                lag = lag,
-                dif = TRUE
-            )
-    } else {
-        dt <- copy(data)
-    }
+    .c <- list()
+    .c[[paste0(c(var,benchVars),collapse = ',')]] <-
+        convert
+    
+    dt <-
+        procExpand(data = data,
+                   by = by,
+                   keepvars = c('date'),
+                   convert = .c)
     
     output.list <-
         foreach (x = var,
                  .errorhandling = 'remove') %do% {
-            analyseCorrelationsOverTime(data = dt, xvar = x, method = method)
-        }    
+                     cat(x,'\n')
+                     analyseCorrelationsOverTime(data = dt, xvar = x, method = method, benchVars = benchVars)
+                 }    
 
     t <-
         Reduce(function(...) merge(..., by = 'date', all = TRUE), output.list)

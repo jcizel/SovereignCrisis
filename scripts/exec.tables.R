@@ -1,4 +1,5 @@
 require(devtools)
+require(pipeR)
 load_all()
 
 ## -------------------------------------------------------------------------- ##
@@ -59,43 +60,46 @@ dt <-
                             dtList = dtList)
 
 
-LaTeXTableGems:::createLatexTableHeader(outfile = './inst/RESULTS/tabulateCorrelations-head.tex')
-t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex')
-t2 <- tabulateCorrelations(dif = TRUE,
-                           lag = -1,
-                           outfile = './inst/RESULTS/tabulateCorrelations-dif.tex')
+LaTeXTableGems:::createLatexTableHeader(
+    outfile = './inst/RESULTS/tabulateCorrelations-head.tex')
+
+t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex',
+                           convert = '`*`(1)')
+
+t2 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations-dif.tex',
+                           convert = 'shift(lag=-1,dif = TRUE)')
 
 t3 <- tabulateCorrelations(method = 'spearman',
+                           convert = '`*`(1)',
                            outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
+
 t4 <- tabulateCorrelations(method = 'spearman',
-                           dif = TRUE,
-                           lag = -1,
+                           convert = 'shift(lag=-1,dif = TRUE)',
                            outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
 
 
 
 
-## CORRELATIONS BETWEEN BENCHMARK MEASURES AND BOTTOM-UP SCORES
+## -------------------------------------------------------------------------- ##
+##           RELATION BETWEEN TAX REVENUES AND SOVEREIGN DEFAULT              ##
+## -------------------------------------------------------------------------- ##
 
-crisis1 <- loadCrisisDB()
-crisis2 <- alternativeCrisisDB()
-ratings <- getSPRatings()
-cds     <- getBloombergSovCDS()
-spreads <- getSovBondSpreads()
+## dt %>>%
+## (df ~ procExpand(df,
+##                  by = 'iso3',
+##                  convert =
+##                  list('ratingnum ~ shift(lag=-1,dif=TRUE)'))) %>>%
+## (? df ~ table(df[[2]])) %>>%
+## (df ~ df[[2]]) %>>%
+## hist(40)
 
-alt     <- getAltmanZscore()
-imf     <- getIMFIFS()
-bs      <- getAggregatedBankscope()
-
-q <- WorldBankAPI:::queryWorldBankVariableList('tax revenue')
-taxrev <- WorldBankAPI:::getWorldBankDataSeries(indicators = q$id)     
-
-
-dt <- augmentBenchmarkDataset(
-    crisisdb = crisis1,
-    dtList =
-        list(alt)
-)
+Pipe(mtcars)$
+data.table(.)$
+.(? df ~ summary(df))$
+.(? ncol(.) -> n)$
+.(? length(.[,carb]))$
+.(~ .[,carb] %>>% hist(10))$
+invisible()
 
 
 
