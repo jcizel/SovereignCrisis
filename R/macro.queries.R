@@ -60,64 +60,115 @@ compressECBVariableList <- function(data,id.pos = 3){
     return(out)
 }
 
-## pattern = queryECBVariableList('gross external debt') %>>% compressECBVariableList %>>% (query)
+## pattern = queryECBVariableList('debt') %>>% compressECBVariableList %>>%
+## (query)
+## tsdata[, table(DATE)]
+## pattern = queryECBVariableList('gross external debt') %>>%
+## compressECBVariableList %>>%
+## (.[numiso>10]) %>>%
+## (query)
+## out <- constructECBDataset(pattern = pattern, tsdata = tsdata)
+
+
 constructECBDataset <- function(
-    pattern = queryECBVariableList('gross external debt') %>>% compressECBVariableList %>>% (query) %>>% paste0(collapse = '|'),
+    pattern,
     id.pos = 3,
     tsdata = fread(input = '../SDMXWrappers/inst/extdata/ECB-TS.csv',drop = "V1")
 ){
-    o <- tsdata
-
-    dt <- o[grepl(pattern = pattern,ID,perl = FALSE)]
-
-    dt[, ID.new  := {
-        ID %>>%
-        stringr:::str_split('\\.') %>>%
-        (x ~ list.map(x, {
-            s <- .
-            s[id.pos] <- '*'
-            paste(s,collapse = '.')
-        })) %>>%
-        unlist
-    }]
-
-    dt[, iso3 := {
-        ID %>>%
-        stringr:::str_split('\\.') %>>%
-        (x ~ list.map(x, .[id.pos])) %>>%
-        unlist %>>% .lookupISOCode
-    }]
-
-    out <- 
-        data.table:::dcast.data.table(dt,
-                                      DATE + iso3 ~ ID.new,
-                                      value.var = 'VALUE')
-
-    out[, date := {
-        
-        DATE %>>%
-        stringr:::str_split('Q') %>>%
-        (x ~ list.map(x, {
-            o <- as.numeric(.)
-            year = o[[1]]
-            qtr = o[[2]]
-
-            date <- 
-                switch(qtr,
-                       paste0(year,'-03-15'),
-                       paste0(year,'-06-15'),
-                       paste0(year,'-09-15'),
-                       paste0(year,'-12-15'))
-            date
-        })) %>>% unlist %>>% as.Date
-    }]
-
+    o <- tsdata[, list(ID, DATE, VALUE)]
     s <- fread(input = '../SDMXWrappers/inst/extdata/ECB-VariableList.csv')
+
+    result <- 
+        foreach (y = pattern,
+                 .errorhandling = 'stop') %do% {
+                     cat(y,'\n')
+                     
+                     dt <- o[grepl(pattern = y,ID,perl = FALSE)]
+
+                     dt[, ID.new  := {
+                         ID %>>%
+                         stringr:::str_split('\\.') %>>%
+                         (x ~ list.map(x, {
+                             s <- .
+                             s[id.pos] <- '*'
+                             paste(s,collapse = '.')
+                         })) %>>%
+                         unlist
+                     }]
+
+                     dt[, iso3 := {
+                         ID %>>%
+                         stringr:::str_split('\\.') %>>%
+                         (x ~ list.map(x, .[id.pos])) %>>%
+                         unlist %>>% .lookupISOCode
+                     }]
+
+                     out <- 
+                         data.table:::dcast.data.table(dt,
+                                                       DATE + iso3 ~ ID.new,
+                                                       value.var = 'VALUE')
+
+                     out[, date := {
+                         
+                         DATE %>>%
+                         stringr:::str_split('Q') %>>%
+                         (x ~ list.map(x, {
+                             o <- as.numeric(.)
+                             year = o[[1]]
+                             qtr = o[[2]]
+
+                             date <- 
+                                 switch(qtr,
+                                        paste0(year,'-03-15'),
+                                        paste0(year,'-06-15'),
+                                        paste0(year,'-09-15'),
+                                        paste0(year,'-12-15'))
+                             date
+                         })) %>>% unlist %>>% as.Date
+                     }]
+
+                     out[, DATE := NULL]
+                     
+                     out <-
+                         structure(out,
+                                   lookup = s[grepl(pattern = y,ID,perl = FALSE)] %>>% compressECBVariableList)
+
+                     return(out)
+                 }
+
+    ## Merge based on iso3 and date (make sure both are present in all datasets)
+
+    ids = unique(as.character(unlist(lapply(result, function(x) unique(x$iso3)))))
+    ids = ids[!is.na(ids) & ids!=""]
+    dates = .fCrDates(begin="1960-01-01",end="2014-07-31", frequency=apply.yearly)[[2L]]
+
+    out <- CJ(iso3 = ids,date = dates)
+
+    for (x in 1:length(result)){
+        cat(x,"\n")
+        b <- copy(result[[x]])
+        b[, date := as.Date(date)]
+
+        uniquecols <- setdiff(names(b),names(out))
+        b <- b[,c("iso3","date",uniquecols), with = FALSE]
+        
+        setkey(out, iso3, date)
+        setkey(b, iso3, date)
+        out <- b[out, roll = 365]
+
+        newcols <- setdiff(intersect(names(out), names(b)),c("iso3","date"))
+        oldcols <- setdiff(names(out),newcols)
+
+        ## cat(newcols,"\n",oldcols,"\n")
+        setcolorder(out,c(oldcols,newcols))
+    }
     
+    lookup <- rbindlist(lapply(result,function(dt) attributes(dt)$lookup))
+
     out <-
         structure(out,
-                  lookup = s[grepl(pattern = pattern,ID,perl = FALSE)] %>>% compressECBVariableList)
-
+                  lookup = lookup)
+    
     return(out)
 }
 
@@ -190,5 +241,5 @@ queryIMFVariableList <- function(pattern = ''){
 ## queryIMFVariableList('credit')
 ## queryIMFVariableList('arrear')
 
-getWorldBankListOfVariables <- WorldBankAPI::getWorldBankListOfVariables
-queryWorldBankVariableList <- WorldBankAPI::queryWorldBankVariableList
+## getWorldBankListOfVariables <- WorldBankAPI::getWorldBankListOfVariables
+## queryWorldBankVariableList <- WorldBankAPI::queryWorldBankVariableList
