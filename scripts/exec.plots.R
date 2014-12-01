@@ -7,13 +7,14 @@ alt     <- getAltmanZscore()
 imf     <- getIMFIFS()
 bs      <- getAggregatedBankscope()
 pd      <- getAggregatedBankscopePDs()
-select  <- createQueriedMacroDataset()
+select  <- createQueriedMacroDataset(test = FALSE)
 
 
 dt <- augmentBenchmarkDataset(
     crisisdb = crisis1,
     dtList =
-        list(alt
+        list(alt,
+             select
              )
 )
 
@@ -65,19 +66,15 @@ plotDefinition =
                   y = 'spread',
                   ylabel = 'Sovereign Bond Yield Spread',
                   idCol = 'iso3'),
-         'bop' =
-             list(data = imf,
-                  y = 'L78CB&D',
-                  ylabel = 'BOP',
-                  idCol = 'iso3'),
-         'alt' =
-             list(data = pd,
-                  y = 'SC_CLOSURE_ALL',
-                  ylabel = 'Banking Score',
-                  idCol = 'iso3'))
+         'GFDD.SI.01' =
+             list(data = dt,
+                  y = 'NY.GDP.PCAP.CD',
+                  ylabel = 'test',
+                  idCol = 'iso3')
+         )
 
 ## undebug(plotSovBenchmarks)
-plotSovBenchmarks(isoSel = "NLD",
+plotSovBenchmarks(isoSel = "GRC",
                   crisisdb = alternativeCrisisDB(),
                   crisistype = 'ratingdrop',
                   limits = as.Date(c('1995-01-01','2013-12-01')),
@@ -85,6 +82,7 @@ plotSovBenchmarks(isoSel = "NLD",
                   width = 320,
                   height = 420,
                   plotDefinition = plotDefinition)
+
 
 
 ## -------------------------------------------------------------------------- ##

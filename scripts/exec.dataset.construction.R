@@ -1,5 +1,4 @@
 require('WorldBankAPI')
-
 # ---------------------------------------------------------------------------- #
 # NEED THE FOLLOWING MACROECONOMIC VARIABLES:                                  #
 #                                                                              #
@@ -14,8 +13,10 @@ require('WorldBankAPI')
 
 ## GOVERNMENT REVENUE
 options(width = 200)
-
-
+queryMacroDatasets('stock market')
+queryMacroDatasets('performing')
+queryMacroDatasets('tax')
+queryMacroDatasets('crisis')
 queryMacroDatasets('revenue')
 queryMacroDatasets('expenditure')
 queryMacroDatasets('debt') 
@@ -23,6 +24,7 @@ queryMacroDatasets('external')
 queryMacroDatasets('tax revenue')
 queryMacroDatasets('house')
 queryMacroDatasets('gross domestic product')
+queryMacroDatasets('gdp ')
 queryMacroDatasets('gross national income')
 queryMacroDatasets('unemployment')
 queryMacroDatasets('treasury')
@@ -52,6 +54,9 @@ queryMacroDatasets('growth')
 
 dt <- createQueriedMacroDataset()
 
+lookup <- attributes(dt)$lookup
 
+convertToStata(data = dt,
+               lookup = lookup)
 
 

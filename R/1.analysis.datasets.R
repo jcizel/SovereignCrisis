@@ -65,12 +65,18 @@ createListOfSelectedVariables <- function(dir.path = './inst/extdata/queries/'){
 
 ## vars <- createListOfSelectedVariables()
 
-createQueriedMacroDataset <- function(){
+createQueriedMacroDataset <- function(test = FALSE){
     lookup <- createListOfSelectedVariables()
 
-    vars <- lookup %>>%
-    list.map(unique(as.character(varcode)))
+    if (test == FALSE){
+        vars <- lookup %>>%
+        list.map(unique(as.character(varcode)))
+    } else {
+        vars = lookup %>>%
+        list.map(tail(unique(as.character(varcode)), 5))
+    }
 
+    
     result <- list()
     
     if (length(vars$imf) > 0){
@@ -127,8 +133,8 @@ createQueriedMacroDataset <- function(){
     }
 
     lookupFinal <- 
-        merge.data.frame(x = lookup %>>% rbindlist %>>% (? str(.)),
-                         y = out %>>% summarizeDataAvailability %>>% (? str(.)),
+        merge.data.frame(x = lookup %>>% rbindlist %>>% (? str(.)) %>>% data.frame,
+                         y = out %>>% summarizeDataAvailability %>>% (? str(.)) %>>% data.frame,
                          by.x = 'varcode',
                          by.y = 'variable',
                          sort = FALSE) %>>% data.table %>>% (? str(.))
@@ -138,7 +144,7 @@ createQueriedMacroDataset <- function(){
 
     out <-
         structure(out,
-                  lookup = lookupFinal)
+                  lookup = lookupFinal %>>% data.table)
     
     return(out)
 }

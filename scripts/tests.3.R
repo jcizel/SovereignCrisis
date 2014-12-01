@@ -54,4 +54,34 @@ dt <- augmentBenchmarkDataset(
 )
 
 
+## -------------------------------------------------------------------------- ##
+##                               TEST                                         ##
+## -------------------------------------------------------------------------- ##
+crisis1 <- loadCrisisDB()
+crisis2 <- alternativeCrisisDB()
+ratings <- getSPRatings()
+cds     <- getBloombergSovCDS()
+spreads <- getSovBondSpreads()
+alt     <- getAltmanZscore()
+imf     <- getIMFIFS()
+bs      <- getAggregatedBankscope()
+pd      <- getAggregatedBankscopePDs()
+select  <- createQueriedMacroDataset(test = FALSE)
+
+
+dt <- augmentBenchmarkDataset(
+    crisisdb = crisis1,
+    dtList =
+        list(alt,
+             select
+             )
+)
+
+dt[,{
+    list(iso3 = iso3,
+         date = date,
+         tax = GC.TAX.TOTL.CN/NY.GDP.MKTP.CN,
+         int = GC.XPN.INTP.CN/NY.GDP.MKTP.CN)
+}][!is.na(int)]
+
 
