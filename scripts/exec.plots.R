@@ -7,6 +7,8 @@ alt     <- getAltmanZscore()
 imf     <- getIMFIFS()
 bs      <- getAggregatedBankscope()
 pd      <- getAggregatedBankscopePDs()
+select  <- createQueriedMacroDataset()
+
 
 dt <- augmentBenchmarkDataset(
     crisisdb = crisis1,

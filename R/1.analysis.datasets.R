@@ -126,17 +126,22 @@ createQueriedMacroDataset <- function(){
         setcolorder(out,c(oldcols,newcols))
     }
 
-    lookup <- rbindlist(lapply(result,function(dt) attributes(dt)$lookup))
+    lookupFinal <- 
+        merge.data.frame(x = lookup %>>% rbindlist %>>% (? str(.)),
+                         y = out %>>% summarizeDataAvailability %>>% (? str(.)),
+                         by.x = 'varcode',
+                         by.y = 'variable',
+                         sort = FALSE) %>>% data.table %>>% (? str(.))
+    
+    lookupFinal %>>% unique %>>%
+    write.csv('./inst/extdata/queries/Queried-Macro-Dataset-Lookup.csv')
 
     out <-
         structure(out,
-                  lookup = rbindlist(lookup))
-
-    rbindlist(lookup) %>>% unique %>>% write.csv('./inst/extdata/queries/Queried-Macro-Dataset-Lookup.csv')
-
+                  lookup = lookupFinal)
+    
     return(out)
 }
-
 
 
 

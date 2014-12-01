@@ -41,8 +41,16 @@ queryMacroDatasets('default')
 queryMacroDatasets('failure')
 queryMacroDatasets('bankrupt')
 queryMacroDatasets('short.term')
+queryMacroDatasets('imf')
+queryMacroDatasets('capital')
+queryMacroDatasets('foreign direct investment')
+queryMacroDatasets('polit')
+queryMacroDatasets('growth')
 
+## MANUALLY MARK THE CSV FILES CREATED IN THE ABOVE QUERIES, BY ADDING A
+## `SELECT` THAT EQUALS 1 IF THE VARIABLE IS TO BE INCLUDED IN THE FINAL DATASET. 
 
+dt <- createQueriedMacroDataset()
 
 
 
