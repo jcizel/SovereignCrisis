@@ -4,6 +4,8 @@
          replacement = "_") %>>%
     gsub(pattern = '^([[:digit:]])(.+)',
          replacement = "_\\1\\2") %>>%
+    gsub(pattern = '[[:space:]]',
+         replacement = "_") %>>%    
     (~ out)
     
     return(out)

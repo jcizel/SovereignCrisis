@@ -64,8 +64,18 @@ createListOfSelectedVariables <- function(dir.path = './inst/extdata/queries/'){
 }
 
 ## vars <- createListOfSelectedVariables()
-
-createQueriedMacroDataset <- function(test = FALSE){
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @param test 
+##' @param checkCache 
+##' @return 
+##' @author Janko Cizel
+createQueriedMacroDataset <- function(
+    test = FALSE,
+    checkCache = TRUE
+){
     lookup <- createListOfSelectedVariables()
 
     if (test == FALSE){
@@ -90,7 +100,21 @@ createQueriedMacroDataset <- function(test = FALSE){
     }
 
     if (length(vars$wb) > 0){
-        .wb <- WorldBankAPI::getWorldBankDataSeries(indicators = vars$wb)
+        if (checkCache == TRUE){
+            .wb.cache <- WorldBankAPI::checkWorldBankCache(indicators = vars$wb)
+            
+            present <- .wb.cache$indicator.id %>>% unique
+            remaining <- setdiff(vars$wb, present)
+            
+            .wb.remain <- WorldBankAPI::getWorldBankDataSeries(indicators = remaining)
+
+            .wb <- rbindlist(list(.wb.cache,.wb.remain), fill = TRUE)
+            .wb <- unique(.wb[month(date) == 12][!country.id %in% c("","0")])
+        } else {
+            .wb <- WorldBankAPI::getWorldBankDataSeries(indicators = vars$wb)
+            .wb <- unique(.wb[month(date) == 12])        
+        }
+        ## browser()
         wb <- WorldBankAPI::createWorldBankDataset(.wb)
 
         cols <- names(wb)[names(wb) %in% vars$wb]
@@ -124,7 +148,7 @@ createQueriedMacroDataset <- function(test = FALSE){
 
         setkey(out, iso3, date)
         setkey(b, iso3, date)
-        b <- unique(b)
+        
         out <- b[out, roll = 365]
 
         newcols <- setdiff(intersect(names(out), names(b)),c("iso3","date"))

@@ -67,21 +67,22 @@ plotDefinition =
                   ylabel = 'Sovereign Bond Yield Spread',
                   idCol = 'iso3'),
          'GFDD.SI.01' =
-             list(data = dt,
-                  y = 'NY.GDP.PCAP.CD',
+             list(data = macro,
+                  y = 'DT.DOD.DIMF.CD',
                   ylabel = 'test',
                   idCol = 'iso3')
          )
 
 ## undebug(plotSovBenchmarks)
-plotSovBenchmarks(isoSel = "GRC",
-                  crisisdb = alternativeCrisisDB(),
-                  crisistype = 'ratingdrop',
-                  limits = as.Date(c('1995-01-01','2013-12-01')),
+plotSovBenchmarks(isoSel = "ARG",
+                  crisisdb = crisis1,
+                  crisistype = 'debtcrisis',
+                  limits = as.Date(c('1985-01-01','2013-12-01')),
                   filename = '~/Downloads/test.pdf',
                   width = 320,
                   height = 420,
                   plotDefinition = plotDefinition)
+
 
 
 
