@@ -109,13 +109,23 @@ createQueriedMacroDataset <- function(
             .wb.remain <- WorldBankAPI::getWorldBankDataSeries(indicators = remaining)
 
             .wb <- rbindlist(list(.wb.cache,.wb.remain), fill = TRUE)
-            .wb <- unique(.wb[month(date) == 12][!country.id %in% c("","0")])
+            .wb <- unique(.wb[month(date) == 12][!is.na(country.id) | !country.id %in% c("","0","NA")])
         } else {
             .wb <- WorldBankAPI::getWorldBankDataSeries(indicators = vars$wb)
             .wb <- unique(.wb[month(date) == 12])        
         }
-        ## browser()
-        wb <- WorldBankAPI::createWorldBankDataset(.wb)
+        browser()
+        test <- copy(.wb)
+        test[,dup := .N,by = c('indicator.id','country.id','date')]
+        test[,table(dup)]
+        test[dup>1]
+        .wb <- .wb[test$dup == 1]
+        
+        wb <- WorldBankAPI::createWorldBankDataset(.wb[,list(indicator.id,indicator.value,country.id,date,value)])
+        ## test <- copy(wb)
+        ## test[,dup := .N,by = c('country.id','date')]
+        ## test[,table(dup)]
+        ## test[dup>1][country.id == '1A']
 
         cols <- names(wb)[names(wb) %in% vars$wb]
 
@@ -143,6 +153,11 @@ createQueriedMacroDataset <- function(
         b <- copy(result[[x]])
         b[, date := as.Date(date)]
 
+        ## test <- copy(b)
+        ## test[,dup := .N,by = c('iso3','date')]
+        ## test[,table(dup)]
+        ## test[dup>1]
+        
         uniquecols <- setdiff(names(b),names(out))
         b <- b[,c("iso3","date",uniquecols), with = FALSE]
 

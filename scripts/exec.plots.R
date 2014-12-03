@@ -7,7 +7,7 @@ alt     <- getAltmanZscore()
 imf     <- getIMFIFS()
 bs      <- getAggregatedBankscope()
 pd      <- getAggregatedBankscopePDs()
-select  <- createQueriedMacroDataset(test = FALSE)
+## select  <- createQueriedMacroDataset(test = FALSE)
 
 
 dt <- augmentBenchmarkDataset(
@@ -68,13 +68,18 @@ plotDefinition =
                   idCol = 'iso3'),
          'GFDD.SI.01' =
              list(data = macro,
-                  y = 'DT.DOD.DIMF.CD',
+                  y = 'GFDD.DM.06',
                   ylabel = 'test',
-                  idCol = 'iso3')
+                  idCol = 'iso3'),
+         'GFDD.SI.02' =
+             list(data = macro,
+                  y = 'GFDD.DM.04',
+                  ylabel = 'test',
+                  idCol = 'iso3')         
          )
 
 ## undebug(plotSovBenchmarks)
-plotSovBenchmarks(isoSel = "ARG",
+plotSovBenchmarks(isoSel = "USA",
                   crisisdb = crisis1,
                   crisistype = 'debtcrisis',
                   limits = as.Date(c('1985-01-01','2013-12-01')),

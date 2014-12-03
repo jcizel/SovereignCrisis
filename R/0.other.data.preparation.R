@@ -253,6 +253,49 @@ getIMFIFS <- function(){
 ## imf <- getIMFIFS()
 
 
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Join a list of data.tables with common keys 
+##' @param dtList list of data.tables
+##' @param id name of the cross-sectional unit column 
+##' @param date name of the time-series unit column
+##' @return merged data.table
+##' @author Janko Cizel
+joinDatasetList <- function(dtList,
+                            id = 'iso3',
+                            date = 'date'){
+
+    ids = unique(as.character(unlist(lapply(dtList, function(x) unique(x[[id]])))))
+    ids = ids[!is.na(ids) & ids!=""]
+    dates = .fCrDates(begin="1960-01-01",end="2014-12-31", frequency=apply.yearly)[[2L]]
+
+    out <- CJ(iso3 = ids,date = dates)
+
+    for (x in 1:length(dtList)){
+        cat(x,"\n")
+        b <- copy(dtList[[x]])
+        b[, date := as.Date(date)]
+
+        uniquecols <- setdiff(names(b),names(out))
+        b <- b[,c(id,date,uniquecols), with = FALSE]
+        ## test <- copy(b)
+        ## test[,dup := .N,by = c(id,date)]
+        ## test[,table(dup)]
+        ## test[dup>1]
+        
+        setkeyv(out, c(id, date))
+        setkeyv(b, c(id, date))
+        out <- unique(b)[out, roll = 365]
+
+        newcols <- setdiff(intersect(names(out), names(b)),c(id,date))
+        oldcols <- setdiff(names(out),newcols)
+
+        setcolorder(out,c(oldcols,newcols))
+    }
+    
+    return(out)
+}
 
 
 ## o <- getECBListOfVariables()

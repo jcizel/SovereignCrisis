@@ -65,6 +65,9 @@ queryMacroDatasets('ted spread')
 queryMacroDatasets('balance')
 queryMacroDatasets('public sector debt')
 queryMacroDatasets('GFDD')
+queryMacroDatasets('budget')
+queryMacroDatasets('deficit')
+queryMacroDatasets('Government Finance')
 
 ## IMF Lending
 
@@ -81,14 +84,18 @@ crisis1 <- loadCrisisDB()
 crisis2 <- alternativeCrisisDB()
 alt     <- getAltmanZscore()
 pd      <- getAggregatedBankscopePDs()
-
-
 macro   <- createQueriedMacroDataset(test = FALSE)
 macro %>>% save(file = './inst/extdata/rdata/macro-data.RData')
 
-lookupFinal <- attributes(macro)$lookup
 
-lookup <- attributes(macro)$lookup
+dtList <-
+    list(
+        crisis1,
+        crisis2,
+        alt,
+        pd,
+        macro
+    )
 
 dt <- augmentBenchmarkDataset(
     crisisdb = crisis1,
@@ -100,10 +107,6 @@ dt <- augmentBenchmarkDataset(
              )
 )
 
-queryMacroDatasets('gfdd')
-d <- WorldBankAPI::getWorldBankDataSeries(indicators = c('GFDD.DM.05','GFDD.DM.06','GFDD.DM.07'))
-
-codes <- c("GFDD.AI.01", "GFDD.AI.02", "GFDD.AI.03", "GFDD.AI.04", "GFDD.AI.05", "GFDD.AI.06", "GFDD.AI.07", "GFDD.AI.08", "GFDD.AI.09", "GFDD.AI.10", "GFDD.AI.11", "GFDD.AI.12", "GFDD.AI.13", "GFDD.AI.14", "GFDD.AI.15", "GFDD.AI.16", "GFDD.AI.17", "GFDD.AI.18", "GFDD.AI.19")
 
 
 
