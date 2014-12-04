@@ -22,13 +22,42 @@ pd      <- getAggregatedBankscopePDs()
 macro   <- createQueriedMacroDataset(test = FALSE)
 
 
-dtList <-
+dt <-
     list(
         bench,
         crisis1,
         crisis2,
         alt,
         pd,
-        macro
-    ) 
+        copy(macro)
+    ) %>>% joinDatasetList
 
+
+
+dt1[iso3 == 'GRC']
+dt2[iso3 == 'GRC'] %>>% (df~qplot(data = df, x=date,y =C_ratingnum_D,geom = 'line'))
+
+## COMPUTE PAIRWISE CORRELATIONS BY DECILES OF Z
+
+tabulateCorrelationsByGroup(
+    data = dt,
+    group = 'spread',
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert = 'shift(lag = +1, dif = TRUE);`*`(-1)',
+    benchVars = c('cds','ratingnum','spread'),
+    benchConvert = 'shift(lag = +1, dif = TRUE);`*`(-1)',
+    method = 'spearman'
+)
+
+tabulateCorrelationsByGroup(
+    data = dt,
+    group = 'ratingnum',
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert = 'shift(lag = -1, dif = TRUE)',
+    benchVars = c('ratingnum','spread','cds'),
+    benchConvert = 'shift(lag = +1, dif = TRUE);`*`(-1)',
+    method = 'pearson'
+)
+
+
+  

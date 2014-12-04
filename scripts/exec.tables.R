@@ -63,19 +63,49 @@ dt <-
 LaTeXTableGems:::createLatexTableHeader(
     outfile = './inst/RESULTS/tabulateCorrelations-head.tex')
 
-t1 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations.tex',
-                           convert = '`*`(1)')
+tabulateCorrelationsByTime(
+    data = dt,
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert = '`*`(1)',
+    benchVars = c('ratingnum','spread','cds'),
+    benchConvert = '`*`(1)',
+    method = 'pearson',
+    outfile = './inst/RESULTS/tabulateCorrelations.tex'
+)
 
-t2 <- tabulateCorrelations(outfile = './inst/RESULTS/tabulateCorrelations-dif.tex',
-                           convert = 'shift(lag=-1,dif = TRUE)')
+tabulateCorrelationsByTime(
+    data = dt,
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert = 'shift(lag = -1, dif = TRUE)',
+    benchVars = c('ratingnum','spread','cds'),
+    benchConvert = 'shift(lag = -1, dif = TRUE)',
+    method = 'pearson',
+    outfile = './inst/RESULTS/tabulateCorrelations-dif.tex'
+)
 
-t3 <- tabulateCorrelations(method = 'spearman',
-                           convert = '`*`(1)',
-                           outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex')
+tabulateCorrelationsByTime(
+    data = dt,
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert =  '`*`(1)',
+    benchVars = c('ratingnum','spread','cds'),
+    benchConvert = '`*`(1)',
+    method = 'spearman',
+    outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex'
+)
 
-t4 <- tabulateCorrelations(method = 'spearman',
-                           convert = 'shift(lag=-1,dif = TRUE)',
-                           outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex')
+## undebug(tabulateCorrelationsByTime)
+## debug(analyseCorrelationsOverTime)
+tabulateCorrelationsByTime(
+    data = dt,
+    xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
+    xvarConvert = 'shift(lag = -1, dif = TRUE)',
+    benchVars = c('ratingnum','spread','cds'),
+    benchConvert = 'shift(lag = -1, dif = TRUE)',
+    method = 'spearman',
+    outfile = './inst/RESULTS/tabulateCorrelations-spearman-dif.tex'
+)
+
+
 
 
 
