@@ -22,15 +22,22 @@ queryMacroDatasets <- function(pattern,
                             label = name,
                             source = 'wb')])})
 
-        r[['ecb']] <- try({
-            queryECBVariableList(pattern) %>>% compressECBVariableList %>>%
-            (df ~ df[, list(varcode = query,
-                            label = label,
-                            numiso = numiso,
-                            yearmin = yearmin,
-                            yearmax = yearmax,
-                            source = 'ecb')])})
+        ## r[['ecb']] <- try({
+        ##     queryECBVariableList(pattern) %>>% compressECBVariableList %>>%
+        ##     (df ~ df[, list(varcode = query,
+        ##                     label = label,
+        ##                     numiso = numiso,
+        ##                     yearmin = yearmin,
+        ##                     yearmax = yearmax,
+        ##                     source = 'ecb')])})
 
+        r[['OECD']] <- try({
+            oecd <- fread('../SDMXWrappers/inst/extdata/OECD-VariableList.csv')
+            oecd %>>%
+            (df ~ df[, list(varcode = VARNAME,
+                            label = LABEL,
+                            source = 'oecd')])})
+        
         r <- Filter(function(x) !inherits(x,'try-error'), r)
         out <- rbindlist(r, fill = TRUE)
 

@@ -141,7 +141,7 @@ tabulateCorrelationsByTime <- function(
                  .errorhandling = 'remove') %do% {
                      cat(x,'\n')
                      ## debug(analyseCorrelationsOverTime)
-                     analyseCorrelationsOverTime(data = dt1,
+                     analyseCorrelationsByGroup(data = dt1,
                                                  xvar = sprintf("M_%s",x),
                                                  benchVars = sprintf('M_%s',benchVars),
                                                  method = method,
@@ -184,7 +184,8 @@ tabulateCorrelationsByGroup <- function(
     xvarConvert = 'shift(lag = +1, dif = TRUE);`*`(-1)',
     benchVars = c('cds','ratingnum','spread'),
     benchConvert = 'shift(lag = +1, dif = TRUE);`*`(-1)',
-    method = 'spearman'
+    method = 'spearman',
+    outfile = sprintf('./inst/RESULTS/tabulateCorrelations-groupby-%s.tex',group)
 ){
     .creategroups <- function(x,
                               probs = seq(0,1,0.1)){
@@ -247,6 +248,12 @@ tabulateCorrelationsByGroup <- function(
             return(t1)
         } %>>%
     Reduce(f = function(...) merge(..., by = sprintf("G_%s",group), all = TRUE))
+
+    r[, sprintf("G_%s",group) := sprintf("G_%s",group) %>>% get %>>% as.numeric]
+
+
+    out <- LaTeXTableGems:::dataTableToInnerLatex(t,
+                                                  outfile = outfile)
 
     return(r)
 }

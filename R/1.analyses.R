@@ -1,8 +1,8 @@
-analyseCorrelationsOverTime <- function(
+analyseCorrelationsByGroup <- function(
     data,
     xvar = 'zscorepd75',
     benchVars = c('ratingnum','spread','cds'),
-    timeVar = 'date',
+    group = 'date',
     method = 'pearson'
 )
 {
@@ -30,38 +30,7 @@ analyseCorrelationsOverTime <- function(
             
             o
         }
-         , keyby = timeVar]
-    
-    return(out)
-}
-
-
-
-analyseCorrelationsByGroup <- function(
-    data,
-    xvar = 'zscorepd75',
-    benchVars = c('ratingnum','spread','cds'),
-    group = 'date',
-    method = 'pearson'
-)
-{
-    out <- 
-        data[, {
-            o <- 
-                foreach(x = benchVars) %do% {
-                    .c <- 
-                        cor(get(x), get(xvar),
-                            method = method,
-                            use = 'pairwise.complete.obs')
-                    
-                    .n <- sum(complete.cases(get(x), get(xvar)))
-
-                    sprintf("%+.3f [N=%4.0f]", .c, .n)
-                }
-            names(o) <- benchVars
-            o
-        }
          , keyby = group]
     
     return(out)
-}   
+}

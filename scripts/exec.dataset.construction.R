@@ -68,6 +68,8 @@ queryMacroDatasets('GFDD')
 queryMacroDatasets('budget')
 queryMacroDatasets('deficit')
 queryMacroDatasets('Government Finance')
+queryMacroDatasets('corporate')
+queryMacroDatasets('bail')
 
 ## IMF Lending
 
