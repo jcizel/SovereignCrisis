@@ -111,7 +111,7 @@ plotSovBenchmarks <- function(isoSel = "ARG",
 
     plot_list <- list()
 
-    for (x in names(plotDefinition)){
+    for (x in 1:length(plotDefinition)){
         plot_list[[x]] <- try({
             .t <- plotDefinition[[x]]
 

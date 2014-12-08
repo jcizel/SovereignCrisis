@@ -89,6 +89,10 @@ pd      <- getAggregatedBankscopePDs()
 macro   <- createQueriedMacroDataset(test = FALSE)
 macro %>>% save(file = './inst/extdata/rdata/macro-data.RData')
 
+oecd.debt <- fread('../SDMXWrappers/inst/extdata/OECD/GOV_DEBT/DATATABLE.csv')
+oecd.bank <- fread('../SDMXWrappers/inst/extdata/OECD/BPF1/DATATABLE.csv')
+
+
 
 dtList <-
     list(
@@ -96,8 +100,16 @@ dtList <-
         crisis2,
         alt,
         pd,
-        macro
+        macro,
+        oecd.debt,
+        oecd.bank
     )
+
+
+dt <- dtList %>>% joinDatasetList()
+
+
+
 
 dt <- augmentBenchmarkDataset(
     crisisdb = crisis1,
