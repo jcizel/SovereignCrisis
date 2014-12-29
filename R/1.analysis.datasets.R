@@ -121,7 +121,7 @@ createQueriedMacroDataset <- function(
             .wb <- WorldBankAPI::getWorldBankDataSeries(indicators = vars$wb)
             .wb <- unique(.wb[month(date) == 12])        
         }
-        browser()
+        ## browser()
         test <- copy(.wb)
         test[,dup := .N,by = c('indicator.id','country.id','date')]
         test[,table(dup)]

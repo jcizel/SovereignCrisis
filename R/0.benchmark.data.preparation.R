@@ -106,7 +106,7 @@
 ##' @author Janko Cizel
 getBloombergSovCDS <- function(){
 
-    cds <- fread(input = './inst/extdata/SOVEREIGN/Bloomberg CDS/Bloomberg Sovereign CDS.csv')
+    cds <- fread(input = './inst/extdata/Bloomberg CDS/Bloomberg Sovereign CDS.csv')
     
     cds[, date := as.Date(as.character(DATE), format = "%m/%d/%Y")]
     cds[, DATE := NULL]

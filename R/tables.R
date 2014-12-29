@@ -140,12 +140,12 @@ tabulateCorrelationsByTime <- function(
         foreach (x = xvar,
                  .errorhandling = 'remove') %do% {
                      cat(x,'\n')
-                     ## debug(analyseCorrelationsOverTime)
+                     ## debug(analyseCorrelationsByGroup)
                      analyseCorrelationsByGroup(data = dt1,
                                                  xvar = sprintf("M_%s",x),
                                                  benchVars = sprintf('M_%s',benchVars),
                                                  method = method,
-                                                 timeVar = 'date')
+                                                 group = 'date')
                  }    
 
     t <-

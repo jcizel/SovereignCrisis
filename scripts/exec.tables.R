@@ -93,8 +93,6 @@ tabulateCorrelationsByTime(
     outfile = './inst/RESULTS/tabulateCorrelations-spearman.tex'
 )
 
-## undebug(tabulateCorrelationsByTime)
-## debug(analyseCorrelationsOverTime)
 tabulateCorrelationsByTime(
     data = dt,
     xvar = c('zscorepd75','SC_CLOSURE_ALL.Q3.'),
