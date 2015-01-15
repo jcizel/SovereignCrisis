@@ -1,15 +1,13 @@
 'require('WorldBankAPI')'
-# ---------------------------------------------------------------------------- #
-# NEED THE FOLLOWING MACROECONOMIC VARIABLES:                                  #
-#                                                                              #
-# 1. GOVERNMENT REVENUE                                                        #
-# 2. GOVERNMENT EXPENDITURE                                                    #
-# 3. EXTERNAL GOVERNMENT DEBT                                                  #
-# 4. GDP                                                                       #
-# 5. UNEMPLOYMENT                                                              #
-# 6.                                                                           #
-#                                                                              #
-# ---------------------------------------------------------------------------- #
+                                        ########################################
+                                        # NEED THE FOLLOWING MACROECONOMIC     #
+                                        # VARIABLES:                           #
+                                        #                                      #
+                                        # 1. GOVERNMENT REVENUE 2. GOVERNMENT  #
+                                        # EXPENDITURE 3. EXTERNAL GOVERNMENT   #
+                                        # DEBT 4. GDP 5. UNEMPLOYMENT 6.       #
+                                        #                                      #
+                                        ########################################
 
 ## GOVERNMENT REVENUE
 options(width = 200)
@@ -21,7 +19,7 @@ queryMacroDatasets('tax')
 queryMacroDatasets('crisis')
 queryMacroDatasets('revenue')
 queryMacroDatasets('expenditure')
-queryMacroDatasets('debt') 
+queryMacroDatasets('debt')
 queryMacroDatasets('external')
 queryMacroDatasets('tax revenue')
 queryMacroDatasets('house')
@@ -77,7 +75,8 @@ queryMacroDatasets('bail')
 
 
 ## MANUALLY MARK THE CSV FILES CREATED IN THE ABOVE QUERIES, BY ADDING A
-## `SELECT` THAT EQUALS 1 IF THE VARIABLE IS TO BE INCLUDED IN THE FINAL DATASET. 
+## `SELECT` THAT EQUALS 1 IF THE VARIABLE IS TO BE INCLUDED IN THE FINAL
+## DATASET.
 
 ## -------------------------------------------------------------------------- ##
 ## CREATE ANALYSIS DATASET                                                    ##
@@ -128,7 +127,7 @@ lookup[varcode %like% "CN$"][,list(varcode,label)]
 
 dt %>>%
 within({
-    GDP     = NY.GDP.MKTP.CN    
+    GDP     = NY.GDP.MKTP.CN
     C.GDP.CN     = NY.GDP.MKTP.CN
     C.TAXREV.GDP = GC.TAX.TOTL.CN / C.GDP.CN
     C.INT.GDP    = GC.XPN.INTP.CN / C.GDP.CN
@@ -171,7 +170,7 @@ procExpand(
     by = 'iso3',
     keepvars = c('date','GDP'),
     convert =
-        ## list('GDP ~ shift(lag = -1, dif = TRUE, relative = TRUE)')        
+        ## list('GDP ~ shift(lag = -1, dif = TRUE, relative = TRUE)')
         list('__CN$ ~ `/`(shift(GDP,lag = -1));winsorize(method = "IQR")')
 )
 
@@ -179,7 +178,7 @@ dtmod %>>%
 procExpand(by = 'iso3',
            keepvars = 'date',
            convert =
-           list('L62 ~ shift(lag = -1, dif = TRUE, relative = TRUE)')) %>>%
+               list('L62 ~ shift(lag = -1, dif = TRUE, relative = TRUE)')) %>>%
 subset(iso3=='USA' & date > '1960-01-01') %>>%
 qplot(x = date,
       y = L62,
@@ -190,6 +189,3 @@ lookup <- attributes(macro)$lookup
 
 convertToStata(data = dt,
                lookup = lookup)
-
-
-

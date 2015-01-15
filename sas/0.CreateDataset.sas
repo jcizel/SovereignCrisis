@@ -43,7 +43,6 @@ OPTIONS PS=MAX;
 
             WHERE
             A.INDEX = B.INDEX AND
-            A.CONSOL IN ('U1','U2','C1') AND
             UPCASE(TRIM(A.SPECIAL)) IN
             ('BANK HOLDING & HOLDING COMPANIES',
             'COMMERCIAL BANKS',
@@ -237,7 +236,7 @@ OPTIONS PS=MAX;
     DATA = __BSSEL__
         OUT = __T__
         METHOD = STD;
-        VAR DATA2055--DATA4035;
+       VAR DATA2055--DATA4035;
     RUN;    
     
 
@@ -281,4 +280,34 @@ OPTIONS PS=MAX;
         );
     
     
+    %MEND;
+
+
+
+%MACRO BANK_PD_DATASET_INDIVIDUAL(
+    OUT=
+    );
+    %BANK_DATASET_SELECTION(OUT = __BSSEL__);
+
+    /* ====================================================================== */
+    /* STANDARDIZE VARIABLES (BANKING MODEL WAS RAN ON STANDARDIZED           */
+    /* VARIABLES)                                                             */
+    /* ====================================================================== */
+    PROC STDIZE
+    DATA = __BSSEL__
+        OUT = __T__
+        METHOD = STD;
+       VAR DATA2055_R--DATA4035;
+    RUN;    
+    
+
+    DATA __T2__;
+        SET __T__;
+
+        SC_CLOSURE_ALL = -3.21 * C16 + 0.365 * C15 + 0.199 * DATA18215 + 0.284 * C26 + 0.724 * DATA18045 - 0.33 * DATA4018_R + 0.145 * DATA18070;
+        SC_OBR_EU = -0.715 * C16 + 0.369 * C15 + 0.087 * DATA18215 + 0.271 * C26;
+    RUN;
+
+    PROC SORT DATA = __T2__ OUT = &OUT.; BY CTRYCODE INDEX DATE; RUN;
+
     %MEND;

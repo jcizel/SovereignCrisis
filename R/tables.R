@@ -56,8 +56,12 @@ tabulateCrises <- function(crisisDT,
         Reduce(function(...) merge(..., by = idCol, all = TRUE), crisis_summary)
 
 
-    out <- LaTeXTableGems:::dataTableToInnerLatex(crisis_summary.table,
-                                                  outfile = outfile)
+    out <- list()
+    out[['string']] <-
+        LaTeXTableGems:::dataTableToInnerLatex(crisis_summary.table,
+                                               outfile = outfile)
+    out[['data']] <-
+        crisis_summary.table
     
 
     return(out)

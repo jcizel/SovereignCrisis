@@ -10,6 +10,7 @@ macro %>>% save(file = './inst/extdata/rdata/macro-data.RData')
 macro.l <- attributes(macro)$lookup[, list(name = varcode,
                                            label = label)]
 
+
 oecd.debt <- fread('../SDMXWrappers/inst/extdata/OECD/GOV_DEBT/DATATABLE.csv')
 oecd.bank <- fread('../SDMXWrappers/inst/extdata/OECD/BPF1/DATATABLE.csv')
 oecd.rev <- fread('../SDMXWrappers/inst/extdata/OECD/REV/DATATABLE.csv')
@@ -66,6 +67,18 @@ dt[
   , paste(modCols) := lapply(.SD, na.locf, na.rm = FALSE)
   , by = "iso3"
   , .SDcols = modCols]
+
+
+countries <- WorldBankAPI::getWorldBankCountries() %>>%
+(dt ~ dt[, list(iso3 = id,
+                region = region.id,
+                income = incomeLevel.id,
+                income.name = incomeLevel.value)])
+
+
+dt <- 
+    dt %>>%
+    merge(countries, by = "iso3")
 
 
 convertToStata(

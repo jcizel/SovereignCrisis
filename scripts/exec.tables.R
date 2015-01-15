@@ -6,6 +6,7 @@ load_all()
 ## SUMMARY OF CRISIS EVENTS
 ## -------------------------------------------------------------------------- ##
 crisis <- loadCrisisDB()
+crisis[, year := year(date)]
 out <- 
     tabulateCrises(
         crisisDT = crisis,
@@ -18,9 +19,9 @@ out <-
             'Banking Crisis'
         ),
         min.time = 1960,
-        idCol = "ISO3",
-        timeCol = "Year",
-        outfile = './inst/RESULTS/crisisdb.tex'
+        idCol = "iso3",
+        timeCol = "year",
+        outfile = './inst/RESULTS/crisisdb2.tex'
     )
 
 

@@ -1,4 +1,3 @@
- 
 ###############################################################################
 ## TESTING OF THE FUNDAMENTAL-BASED VIEW OF SOVEREIGN DEFAULT RISK           ##
 ##                                                                           ##
@@ -35,7 +34,7 @@ dt <-
 
 
 dt1[iso3 == 'GRC']
-dt2[iso3 == 'GRC'] %>>% (df~qplot(data = df, x=date,y =C_ratingnum_D,geom = 'line'))
+dt2[iso3 == 'GRC'] %>>% (df~qplot(data = df, x=date,y =C <- ratingnum <- D,geom = 'line'))
 
 ## COMPUTE PAIRWISE CORRELATIONS BY DECILES OF Z
 
@@ -60,5 +59,3 @@ tabulateCorrelationsByGroup(
     method = 'pearson'
 )
 
-
-  

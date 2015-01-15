@@ -158,18 +158,32 @@ createCrisisVariables <- function(crisisDT,
 ##' @return data.table with crisis dataset. 
 ##' @author Janko Cizel
 loadCrisisDB <- function(){
-    out <- fread(input = './inst/extdata/SOVEREIGN/RR-crisis.dataset.csv',
+    out <- fread(input = './inst/extdata/Reinhart and Rogoff DB/RR-crisis.dataset.csv',
                  header = TRUE)
-    out[, date := as.Date(paste0(Year,"-12-30"))]
+    out[, date := as.Date(sprintf("%s-%s-%s",Year,12,31))]
 
     setnames(out, "ISO3", "iso3")
 
     out[, debtcrisis := (`Foreign Sov Debt`*1 + `Domestic Sov Debt`*1)>0]
+
+    res <-
+        out[, list(
+            iso3,
+            date,
+            RRCRISIS_CURR = `Currency Crisis`,
+            RRCRISIS_INFL = `Inflation Crisis`,
+            RRCRISIS_SMCRASH = `Stock Market Crash`,
+            RRCRISIS_DSDEBT = `Domestic Sov Debt`,
+            RRCRISIS_FSDEBT = `Foreign Sov Debt`,
+            RRCRISIS_BANK = `Banking Crisis`
+        )]
     
-    return(out[,c("Country", "iso3", "date", "Independence", "Currency Crisis", 
-                  "Inflation Crisis", "Stock Market Crash", "Domestic Sov Debt", 
-                  "Foreign Sov Debt", "Banking Crisis", "Crisis Tally", "debtcrisis"),
-               with = FALSE])
+        ## out[,c("Country", "iso3", "date", "Independence", "Currency Crisis", 
+        ##        "Inflation Crisis", "Stock Market Crash", "Domestic Sov Debt", 
+        ##        "Foreign Sov Debt", "Banking Crisis", "Crisis Tally", "debtcrisis"),
+        ##     with = FALSE]
+    
+    return(res)
 }
 
 ##' .. content for \description{} (no empty lines) ..
